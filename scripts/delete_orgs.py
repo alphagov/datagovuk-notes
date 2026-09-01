@@ -42,7 +42,7 @@ def has_org_datasets(org_name):
     resp = json.loads(ping)
     if resp.get("status") == "OK":
         datasets = solr.search(
-            f"organization: {org_name}",
+            f"organization: {org_name} AND type:dataset",
             **{
                 "fq": [],
                 "fl": "id,extras_guid,metadata_modified,title",
