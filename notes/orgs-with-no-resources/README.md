@@ -45,7 +45,7 @@ https://cddodatamarketplace.atlassian.net/browse/DGUK-740
 - the run on Integration appeared to be successful for the report, will now move deleting the orgs in Integration
   - the publishers are still showing in the drop down list, they need to be removed from the solr index
 
-  - I added the doc in the local solr server - 
+  - I added the doc in the local solr server using this curl command - 
 
   ```
     curl -X POST \
@@ -60,3 +60,31 @@ https://cddodatamarketplace.atlassian.net/browse/DGUK-740
   ```
 
   - and then ran the delete orgs script to remove it
+
+  - this curl command shows the org in the solr index as a check whether the deletion ran successfully
+
+  ```
+    curl "$CKAN_SOLR_URL/query" -d '
+    {
+    query : "site_id:dgu_organisations_2 AND name:example-publisher-1"
+    }'
+  ```
+
+  - the script took a few attempts to run on Integration, this was due to some bugs in the code which referenced an incorrect Solr env var but script finally ran successfully removing the orgs from the index
+
+## For PR review
+
+### Expected result
+
+The removal of all the orgs mentioned in `orgs-list.txt` from the CKAN and datagovuk website.
+The orgs and associated revisions and extras have been set to a deleted state rather than permanent deletion, this will allow us to revert the state if needed.
+
+### Testing coverage
+
+- extensive testing on local docker development stack
+- extensive testing on the Integration EKS stack to remove the orgs, completed successfully.
+
+### Key Takeaways
+
+- Orgs just need to be removed from the database to be removed from CKAN admin.
+- For the `datagovuk` app orgs also need to be removed from the Solr orgs index.
