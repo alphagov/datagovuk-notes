@@ -11,6 +11,8 @@ https://cddodatamarketplace.atlassian.net/browse/DGUK-740
   - setting to a deleted state will allow the org to be undeleted if needed
 
 - after a successful run locally will try it on Integration
+  - https://github.com/alphagov/govuk-dgu-charts/tree/try-script is being used to test the script out on Integration, a separate branch will be created once testing on Integration is complete
+
   - the solr search picked up some datasets which required filtering by the type of package and the state, as there were some draft and harvest package types matched
   
   - some datasets are showing in the old find but not new python app 
@@ -28,7 +30,7 @@ https://cddodatamarketplace.atlassian.net/browse/DGUK-740
 
     Will check if they are still required to be removed before running the script on Staging and Production
 
-    - The script otherwise ran successfully, next will actual do the deletion
+    - The script otherwise ran successfully, next will actually do the deletion
 
 - bit more clarity on the spreadsheet with orgs that have datasets with not resources to be removed
   - so will shift the code to check if there are any resources linked to the org instead
@@ -39,3 +41,4 @@ https://cddodatamarketplace.atlassian.net/browse/DGUK-740
     SELECT id FROM package WHERE state = 'active' AND owner_org = '7eb02ff1-61bd-4726-954c-0d4746e1414e'
   );
   ```
+
