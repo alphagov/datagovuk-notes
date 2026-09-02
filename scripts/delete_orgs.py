@@ -58,9 +58,16 @@ def _delete_from_database(org_name):
             cursor.execute(f'UPDATE "group" SET state = \'deleted\' WHERE name = \'{org_name}\'')
 
 
+def _delete_from_solr(org_name):
+    solr_url = os.getenv("SOLR_URL")
+    solr = pysolr.Solr(solr_url, always_commit=True)
+    solr.delete(q=f'site_id:dgu_organisations_2 AND name:"{org_name}"')
+
+
 def delete_orgs(logger, org_list, report_only=True):
     errors = []
     num_deleted_from_database = 0
+    num_deleted_from_solr = 0
 
     for i, org in enumerate(org_list):
         deleted = False
@@ -75,15 +82,23 @@ def delete_orgs(logger, org_list, report_only=True):
                         _delete_from_database(org)
 
                     num_deleted_from_database += 1
-                    deleted = True
                 except Exception as exc:
-                    errors.append((org, "Error deleting org:" + str(exc)))
+                    errors.append((org, "Error deleting org from database:" + str(exc)))
+
+                try:
+                    if not report_only:
+                        _delete_from_solr(org)
+
+                    num_deleted_from_solr += 1
+                except Exception as exc:
+                    errors.append((org, "Error deleting org from solr:" + str(exc)))
+                deleted = True
 
             logger.info(f"{i + 1}/{len(org_list)}: {('Will delete' if report_only else 'deleted') if deleted else 'Skipped'} {org}")
         except Exception as exc:
             errors.append((org, "Error checking org resources: " + str(exc)))
     
-    return errors, num_deleted_from_database
+    return errors, num_deleted_from_database, num_deleted_from_solr
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -130,12 +145,12 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         org_list = get_org_list(args.orgs_path)
-        errors, num_deleted_from_database = delete_orgs(logger, org_list, report_only=args.report_only == "True")
+        errors, num_deleted_from_database, num_deleted_from_solr = delete_orgs(logger, org_list, report_only=args.report_only == "True")
         for org, error in errors:
             logger.error(f"Error deleting {org}: {error}")
 
         logger.info(f"{('Will delete' if args.report_only == 'True' else 'deleted')} {num_deleted_from_database} organisations from database")
-
+        logger.info(f"{('Will delete' if args.report_only == 'True' else 'deleted')} {num_deleted_from_solr} organisations from solr")
         print(f"Logs written to {log_path}")
     except Exception as e:
         logger.error(str(e))
