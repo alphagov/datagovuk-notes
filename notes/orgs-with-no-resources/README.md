@@ -42,3 +42,21 @@ https://cddodatamarketplace.atlassian.net/browse/DGUK-740
   );
   ```
 
+- the run on Integration appeared to be successful for the report, will now move deleting the orgs in Integration
+  - the publishers are still showing in the drop down list, they need to be removed from the solr index
+
+  - I added the doc in the local solr server - 
+
+  ```
+    curl -X POST \
+    -d '{"add":{ "doc":{
+            "site_id":"dgu_organisations_2",
+            "id":"test_id_1",
+            "title":"Example Publisher 1",
+            "name":"example-publisher-1",
+        }}}' \
+    -H "Content-Type: application/json" \
+    $CKAN_SOLR_URL/update?commit=true    
+  ```
+
+  - and then ran the delete orgs script to remove it

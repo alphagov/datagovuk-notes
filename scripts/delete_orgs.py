@@ -59,9 +59,14 @@ def _delete_from_database(org_name):
 
 
 def _delete_from_solr(org_name):
-    solr_url = os.getenv("SOLR_URL")
+    solr_url = os.getenv("CKAN_SOLR_URL")
     solr = pysolr.Solr(solr_url, always_commit=True)
-    solr.delete(q=f'site_id:dgu_organisations_2 AND name:"{org_name}"')
+    datasets = solr.search(f'site_id:dgu_organisations_2 AND name:"{org_name}"')
+
+    if datasets.hits > 0:
+        solr.delete(q=f'site_id:dgu_organisations_2 AND name:"{org_name}"')
+    else:
+        raise ValueError(f"Organisation {org_name} not found in Solr.")
 
 
 def delete_orgs(logger, org_list, report_only=True):
