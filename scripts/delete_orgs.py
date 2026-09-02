@@ -38,13 +38,14 @@ def has_org_resources(org_name):
     with psycopg2.connect(os.getenv("CKAN_SQLALCHEMY_URL")) as conn:
         with conn.cursor() as cursor:
             cursor.execute(f'SELECT id FROM "group" WHERE name = \'{org_name}\'')
-            org_id = cursor.fetchone()[0]
-            print(f"org_id: {org_id}")
-            cursor.execute(f"SELECT COUNT(*) FROM resource WHERE state = 'active' AND package_id IN "
-                           f"(SELECT id FROM package WHERE state = 'active' AND owner_org = '{org_id}');")
-            count = cursor.fetchone()[0]
-            print(f"count: {count}")
-    return count > 0
+            org_id = cursor.fetchone()
+            if org_id:
+                cursor.execute(f"SELECT COUNT(*) FROM resource WHERE state = 'active' AND package_id IN "
+                            f"(SELECT id FROM package WHERE state = 'active' AND owner_org = '{org_id[0]}');")
+                count = cursor.fetchone()
+                return count[0] > 0
+            else:
+                raise ValueError(f"Organisation {org_name} not found in the database.")
 
 
 def _delete_from_database(org_name):
@@ -63,21 +64,24 @@ def delete_orgs(logger, org_list, report_only=True):
 
     for i, org in enumerate(org_list):
         deleted = False
-        if has_org_resources(org):
-            logger.info(f"Organisation {org} has resources, skipping...")
-        else:
-            logger.info(f"Organisation {org} has no resources, deleting...")
+        try:
+            if has_org_resources(org):
+                logger.info(f"Organisation {org} has resources, skipping...")
+            else:
+                logger.info(f"Organisation {org} has no resources, deleting...")
 
-            try:
-                if not report_only:
-                    _delete_from_database(org)
+                try:
+                    if not report_only:
+                        _delete_from_database(org)
 
-                num_deleted_from_database += 1
-                deleted = True
-            except Exception as exc:
-                errors.append((org, str(exc)))
+                    num_deleted_from_database += 1
+                    deleted = True
+                except Exception as exc:
+                    errors.append((org, "Error deleting org:" + str(exc)))
 
-        logger.info(f"{i + 1}/{len(org_list)}: {('Will delete' if report_only else 'deleted') if deleted else 'Skipped'} {org}")
+            logger.info(f"{i + 1}/{len(org_list)}: {('Will delete' if report_only else 'deleted') if deleted else 'Skipped'} {org}")
+        except Exception as exc:
+            errors.append((org, "Error checking org resources: " + str(exc)))
     
     return errors, num_deleted_from_database
 
