@@ -34,27 +34,17 @@ def get_org_list(org_list_path):
     return org_list
 
 
-def has_org_datasets(org_name):
-    solr_url = os.getenv("CKAN_SOLR_URL")
-    solr = pysolr.Solr(solr_url, timeout=10)
-
-    ping = solr.ping()
-    resp = json.loads(ping)
-    if resp.get("status") == "OK":
-        datasets = solr.search(
-            f"organization: {org_name} AND type:dataset AND state:active",
-            **{
-                "fq": [],
-                "fl": "id,extras_guid,metadata_modified,title",
-                "sort": f"title asc, extras_guid asc",
-                "start": 0,
-                "rows": 100,
-            },
-        )
-
-        return datasets.hits > 0
-    else:
-        raise Exception(f"Solr response not OK: {resp.get('status')}")
+def has_org_resources(org_name):
+    with psycopg2.connect(os.getenv("CKAN_SQLALCHEMY_URL")) as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(f'SELECT id FROM "group" WHERE name = \'{org_name}\'')
+            org_id = cursor.fetchone()[0]
+            print(f"org_id: {org_id}")
+            cursor.execute(f"SELECT COUNT(*) FROM resource WHERE state = 'active' AND package_id IN "
+                           f"(SELECT id FROM package WHERE state = 'active' AND owner_org = '{org_id}');")
+            count = cursor.fetchone()[0]
+            print(f"count: {count}")
+    return count > 0
 
 
 def _delete_from_database(org_name):
@@ -73,10 +63,10 @@ def delete_orgs(logger, org_list, report_only=True):
 
     for i, org in enumerate(org_list):
         deleted = False
-        if has_org_datasets(org):
-            logger.info(f"Organisation {org} has datasets, skipping...")
+        if has_org_resources(org):
+            logger.info(f"Organisation {org} has resources, skipping...")
         else:
-            logger.info(f"Organisation {org} has no datasets, deleting...")
+            logger.info(f"Organisation {org} has no resources, deleting...")
 
             try:
                 if not report_only:

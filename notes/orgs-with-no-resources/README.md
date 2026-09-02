@@ -29,3 +29,13 @@ https://cddodatamarketplace.atlassian.net/browse/DGUK-740
     Will check if they are still required to be removed before running the script on Staging and Production
 
     - The script otherwise ran successfully, next will actual do the deletion
+
+- bit more clarity on the spreadsheet with orgs that have datasets with not resources to be removed
+  - so will shift the code to check if there are any resources linked to the org instead
+  - the query will be something like this - tested out on my local stack
+
+  ```
+  SELECT COUNT(*) FROM resource WHERE state = 'active' AND package_id IN (
+    SELECT id FROM package WHERE state = 'active' AND owner_org = '7eb02ff1-61bd-4726-954c-0d4746e1414e'
+  );
+  ```
