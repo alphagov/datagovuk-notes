@@ -19,6 +19,8 @@ The orgs and associated revisions and extras have been set to a deleted state ra
 
 https://cddodatamarketplace.atlassian.net/browse/DGUK-740
 
+- extracted the list of orgs to delete from tabs 1 and 2 of the `orgs with no resources analysis.xlsx` file into orgs-list.txt as a list of org names rather than the titles as it will be unique.
+
 - no built in way to delete orgs from the ckan system, so will have to delete orgs via database and solr calls
 
 - no need for solr call, removing from the database is sufficient for removing the publisher from the CKAN system
