@@ -40,3 +40,4 @@ python reindex.py --input-file /tmp/deleted_packages_to_reindex.txt
 
 - the commands to process and reindex the dataset should be run from the same script job
   - next step is to test this out in Integration with a dry run before setting the mode to a live run
+- the retry script doesn't check if the resource URL has been updated, so update the code to get the latest URL from the database but also show what the original URL is in the output csv file

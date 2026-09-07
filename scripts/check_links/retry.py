@@ -1,10 +1,12 @@
 import argparse
 import csv
 import sys
+import os
 import time
 import random
 from enum import StrEnum
 import asyncio
+import psycopg2
 from urllib.parse import urlparse
 import aiohttp
 from aiolimiter import AsyncLimiter
@@ -82,6 +84,17 @@ def get_resources_to_retry(csv_path):
     return retry_resources
 
 
+def get_resource_url(resource_id: str) -> str:
+    with psycopg2.connect(os.getenv("CKAN_SQLALCHEMY_URL")) as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(f"SELECT url FROM resource WHERE id = '{resource_id}'")
+            result = cursor.fetchone()
+            if result:
+                return result[0]
+            else:
+                raise ValueError(f"Resource {resource_id} not found in the database.")
+
+
 # Shared dictionary to store the rate limiters for each individual domain
 host_limiters = {}
 
@@ -100,26 +113,31 @@ def get_limiter_for_url(url: str) -> AsyncLimiter:
 async def fetch_url(session: aiohttp.ClientSession, url: str, resource_id: str) -> dict:
     """Fetches a single URL obeying per-host rate limits."""
     limiter = get_limiter_for_url(url)
+    db_url = ""
 
     # Obey per-host rate limit (pauses if this specific host is hot)
     async with limiter:
         try:
             timeout = aiohttp.ClientTimeout(total=10)
-            async with session.get(url, timeout=timeout) as response:
+            db_url = get_resource_url(resource_id)  # Get the resource URL from the database
+
+            async with session.get(db_url, timeout=timeout) as response:
                 text = await response.text(errors="replace")  # noqa: F841
                 return {
-                    "url": url,
+                    "url": db_url,
                     "status": response.status,
                     "error": None,
                     "resource_id": resource_id,
+                    "original_url": url,
                 }
                 # Process your data here (e.g., save to a database or file)
         except Exception as e:
             return {
-                "url": url,
+                "url": db_url or url,
                 "status": None,
                 "error": e,
                 "resource_id": resource_id,
+                "original_url": url,
             }
 
 
@@ -208,6 +226,7 @@ async def main(input_csv_file_path, output_csv_file_path, limit=None, orgs_path=
             "http-status",
             "category",
             "error-detail",
+            "original-url",
             "original-http-status",
             "original-category",
             "original-error-detail",
@@ -219,6 +238,7 @@ async def main(input_csv_file_path, output_csv_file_path, limit=None, orgs_path=
         for result in shared_results:
             resource_id = result["resource_id"]
             original_row = resources_to_retry[resource_id]
+            original_row["resource-url"] = result["url"] # updated to the database URL
             response_category, response_detail = classify_response(
                 result["status"], result["error"]
             )
@@ -230,6 +250,7 @@ async def main(input_csv_file_path, output_csv_file_path, limit=None, orgs_path=
                 "original-http-status": original_row["http-status"],
                 "original-category": original_row["category"],
                 "original-error-detail": original_row["error-detail"],
+                "original-url": result["original_url"],
                 "to-delete": "FALSE" if response_category == Category.OK else "TRUE",
             }
             writer.writerow(new_row)
