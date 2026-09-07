@@ -159,6 +159,11 @@ async def main(input_csv_file_path, output_csv_file_path, limit=None, orgs_path=
         (resource["resource-url"].strip(), resource["resource-id"])
         for resource in resources_to_retry.values() if not orgs or resource["org-name"] in orgs
     )
+
+    for resource in resources_to_retry.values():
+        if not orgs or resource["org-name"] in orgs:
+            print(f"Resource {resource['resource-url']} from org {resource['org-name']} will be retried.")
+
     urls_to_retry = list(retry_urls)
     if not limit:
         limit = len(retry_urls)
