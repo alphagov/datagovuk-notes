@@ -41,3 +41,7 @@ python reindex.py --input-file /tmp/deleted_packages_to_reindex.txt
 - the commands to process and reindex the dataset should be run from the same script job
   - next step is to test this out in Integration with a dry run before setting the mode to a live run
 - the retry script doesn't check if the resource URL has been updated, so update the code to get the latest URL from the database but also show what the original URL is in the output csv file
+- the updated retry script was ran successfully locally and on Integration
+- the log file from the job was downloaded and the csv file extracted from it
+- the retry csv file indicated that there were 45 resources that were skipped because the resource is now working
+- the process file was tested locally and then on Integration, both ran successfully
