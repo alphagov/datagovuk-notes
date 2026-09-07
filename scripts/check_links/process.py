@@ -303,9 +303,9 @@ def main(argv: list[str] | None = None) -> int:
     output_report_path = _create_output_filename(args.input, args.set_state, timestamp)
     logger.info(f"{args.set_state} report path: {output_report_path}")
 
-    dsn = os.environ.get("POSTGRES_URL")
+    dsn = os.environ.get("CKAN_SQLALCHEMY_URL")
     if not dsn:
-        logger.error("POSTGRES_URL env var is not set")
+        logger.error("CKAN_SQLALCHEMY_URL env var is not set")
         return 1
 
     with Repository(dsn) as repository:
