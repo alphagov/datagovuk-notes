@@ -17,3 +17,5 @@ https://cddodatamarketplace.atlassian.net/browse/DGUK-964 part 2
 `python retry.py ./broken_links.csv /tmp/retry.csv -o orgs.txt`
 
 - next step is to run the retry script on Integration, as it stores it as a separate log file I will run `cat /script/retry.csv` so that it is available as part of the job log for now
+- the charts script file will have to be updated to download the check links report and the orgs to defer list
+- also the broken links report is actually already filtered for deferred orgs so the retry will have to run against the check_links_report, will remove the broken links and rename the test file to avoid confusion
