@@ -33,7 +33,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
 LOG_FILE = "check_links_updated_to_{state}.log"
-REINDEX_FILE = "{state}_packages_to_reindex_{timestamp}.txt"
+REINDEX_FILE = "{state}_packages_to_reindex.txt"
 
 
 @dataclass(frozen=True)
@@ -83,9 +83,6 @@ class Repository:
     """
     UPDATE_RESOURCE_SQL = "UPDATE resource SET state = 'deleted' WHERE id = %(resource_id)s AND state = 'active'"
     UPDATE_RESOURCE_ACTIVE_SQL = "UPDATE resource SET state = 'active' WHERE id = %(resource_id)s AND state = 'deleted'"
-    UPDATE_PACKAGE_MTIME_SQL = (
-        "UPDATE package SET metadata_modified = NOW() WHERE id = %(package_id)s"
-    )
 
     def __init__(self, dsn: str) -> None:
         self._dsn = dsn
@@ -146,8 +143,6 @@ class Repository:
         with self._conn, self._conn.cursor() as cur:
             cur.execute(self.UPDATE_RESOURCE_SQL, {"resource_id": resource_id})
             rowcount = cur.rowcount
-            if rowcount > 0:
-                cur.execute(self.UPDATE_PACKAGE_MTIME_SQL, {"package_id": package_id})
         return rowcount
 
     def mark_resource_active(self, resource_id: str, package_id: str) -> int:
@@ -155,8 +150,6 @@ class Repository:
         with self._conn, self._conn.cursor() as cur:
             cur.execute(self.UPDATE_RESOURCE_ACTIVE_SQL, {"resource_id": resource_id})
             rowcount = cur.rowcount
-            if rowcount > 0:
-                cur.execute(self.UPDATE_PACKAGE_MTIME_SQL, {"package_id": package_id})
         return rowcount
 
     def update_resource(self, resource_id: str, package_id: str, action: str) -> int:
@@ -237,7 +230,6 @@ def apply(
     output_report_path: str,
     mode: str,
     set_state: str,
-    orgs_to_process: list[str],
 ) -> None:
     to_reindex: set[str] = set()
     updated = 0
@@ -247,8 +239,7 @@ def apply(
     with contextlib.ExitStack() as stack:
         infile = stack.enter_context(open(input_path, newline="", encoding="utf-8"))
         for row in csv.DictReader(infile):
-            if row.get("to-delete", "").lower().strip() != "true" or \
-                row.get("org-name", "").strip() not in orgs_to_process:
+            if row.get("to-delete", "").lower().strip() != "true":
                 continue
             resource_id = row["resource-id"]
             package_id = row["package-id"]
@@ -295,23 +286,12 @@ def apply(
     )
 
 
-def get_orgs_to_process() -> str:
-    """Get a set of org names from the check_links CSV report."""
-    orgs: list[str] = []
-    with open("orgs_to_process.txt", encoding="utf-8") as infile:
-        for line in infile:
-            org_name = line.strip()
-            if org_name:
-                orgs.append(org_name)
-    return orgs
-
-
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S")
     log_path = LOG_FILE.format(state=args.set_state) if args.local else None
     reindex_path = os.path.join(
-        args.output_dir, REINDEX_FILE.format(state=args.set_state, timestamp=timestamp)
+        args.output_dir, REINDEX_FILE.format(state=args.set_state)
     )
 
     logger = setup_logging(log_path)
@@ -328,8 +308,6 @@ def main(argv: list[str] | None = None) -> int:
         logger.error("POSTGRES_URL env var is not set")
         return 1
 
-    orgs_to_process = get_orgs_to_process()
-
     with Repository(dsn) as repository:
         apply(
             logger=logger,
@@ -339,7 +317,6 @@ def main(argv: list[str] | None = None) -> int:
             output_report_path=output_report_path,
             mode=args.mode,
             set_state=args.set_state,
-            orgs_to_process=orgs_to_process
         )
 
     return 0
