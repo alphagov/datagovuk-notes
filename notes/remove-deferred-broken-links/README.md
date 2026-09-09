@@ -1,3 +1,20 @@
+## Summary
+
+### Expected result
+
+The removal of all broken links for deferred orgs after they have been already retried. 45 resources which were failing are now working so have been removed from the deletion process as they have been marked as FALSE under the to-delete column.
+
+### Testing coverage
+
+Local testing was set up to check that the scripts behaved as expected and a full test has been carried out on Integration to only remove resources that have been marked for deletion still retaining resources that should no longer be deleted.
+
+### Main takeaways
+
+- the retry script didn't use the URL from the database which would have been the latest updated by the publisher. This caused some confusion at the start of the work.
+- the scripts processing on govuk-dgu-charts repo can be extended to suit a number of scenarios.
+
+## Notes
+
 https://cddodatamarketplace.atlassian.net/browse/DGUK-964 part 2
 
 - extracted broken link resources to delete from spreadsheet `2026 06 Broken links responses` as there was some PII in the doc.
