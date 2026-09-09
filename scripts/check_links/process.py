@@ -81,7 +81,7 @@ class Repository:
           AND TRIM(r.url) <> ''
         ORDER BY p.id, r.id
     """
-    UPDATE_RESOURCE_SQL = "UPDATE resource SET state = 'deleted' WHERE id = %(resource_id)s AND state = 'active'"
+    UPDATE_RESOURCE_SQL = "UPDATE resource SET state = 'deleted' WHERE id = %(resource_id)s AND LOWER(TRIM(url)) = %(resource_url)s AND state = 'active'"
     UPDATE_RESOURCE_ACTIVE_SQL = "UPDATE resource SET state = 'active' WHERE id = %(resource_id)s AND state = 'deleted'"
 
     def __init__(self, dsn: str) -> None:
@@ -138,10 +138,10 @@ class Repository:
                 ) in cur
             ]
 
-    def mark_resource_deleted(self, resource_id: str, package_id: str) -> int:
+    def mark_resource_deleted(self, resource_id: str, resource_url: str, package_id: str) -> int:
         assert self._conn is not None, "Repository not entered"
         with self._conn, self._conn.cursor() as cur:
-            cur.execute(self.UPDATE_RESOURCE_SQL, {"resource_id": resource_id})
+            cur.execute(self.UPDATE_RESOURCE_SQL, {"resource_id": resource_id, "resource_url": resource_url})
             rowcount = cur.rowcount
         return rowcount
 
@@ -152,10 +152,10 @@ class Repository:
             rowcount = cur.rowcount
         return rowcount
 
-    def update_resource(self, resource_id: str, package_id: str, action: str) -> int:
+    def update_resource(self, resource_id: str, resource_url: str, package_id: str, action: str) -> int:
         match action:
             case "deleted":
-                return self.mark_resource_deleted(resource_id, package_id)
+                return self.mark_resource_deleted(resource_id, resource_url, package_id)
             case "active":
                 return self.mark_resource_active(resource_id, package_id)
             case _:
@@ -242,12 +242,13 @@ def apply(
             if row.get("to-delete", "").lower().strip() != "true":
                 continue
             resource_id = row["resource-id"]
+            resource_url = row["resource-url"].lower().strip()
             package_id = row["package-id"]
             to_reindex.add(package_id)
 
             if mode == "live":
                 rowcount = repository.update_resource(
-                    resource_id, package_id, set_state
+                    resource_id, resource_url, package_id, set_state
                 )
                 if rowcount > 0:
                     row_copy = row.copy()
@@ -268,7 +269,7 @@ def apply(
                     outfile.flush()
                 else:
                     logger.info(
-                        f"skipped {resource_id} (not in correct state to set state to {set_state})"
+                        f"skipped {resource_id} (attempted to set state to {set_state} and looked up with URL {resource_url})"
                     )
             else:
                 updated += 1

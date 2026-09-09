@@ -62,3 +62,4 @@ python reindex.py --input-file /tmp/deleted_packages_to_reindex.txt
 - the log file from the job was downloaded and the csv file extracted from it
 - the retry csv file indicated that there were 45 resources that were skipped because the resource is now working
 - the process file was tested locally and then on Integration, both ran successfully
+- the process script was updated to also ensure that the resource url hadn't changed since the last retry, if it has then it should not process it as it needs to be checked
