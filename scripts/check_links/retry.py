@@ -11,6 +11,8 @@ from urllib.parse import urlparse
 import aiohttp
 from aiolimiter import AsyncLimiter
 
+from lib import is_filter_by
+
 # Configuration
 NUM_WORKERS = 100  # Fixed number of parallel worker tasks
 RATE_LIMIT_PER_HOST = 2  # Max requests per host...
@@ -119,7 +121,9 @@ async def fetch_url(session: aiohttp.ClientSession, url: str, resource_id: str) 
     async with limiter:
         try:
             timeout = aiohttp.ClientTimeout(total=10)
-            db_url = get_resource_url(resource_id)  # Get the resource URL from the database
+            db_url = get_resource_url(
+                resource_id
+            )  # Get the resource URL from the database
 
             async with session.get(db_url, timeout=timeout) as response:
                 text = await response.text(errors="replace")  # noqa: F841
@@ -163,7 +167,14 @@ async def worker(
             queue.task_done()
 
 
-async def main(input_csv_file_path, output_csv_file_path, limit=None, orgs_path=None):
+async def main(
+    input_csv_file_path,
+    output_csv_file_path,
+    limit=None,
+    orgs_path=None,
+    is_defer_org=None,
+    status_filter_by=None,
+):
     # Initialize the queue and fill it up
     queue = asyncio.Queue()
     orgs = []
@@ -175,12 +186,19 @@ async def main(input_csv_file_path, output_csv_file_path, limit=None, orgs_path=
     resources_to_retry = get_resources_to_retry(input_csv_file_path)
     retry_urls = set(
         (resource["resource-url"].strip(), resource["resource-id"])
-        for resource in resources_to_retry.values() if not orgs or resource["org-name"] in orgs
+        for resource in resources_to_retry.values()
+        if is_filter_by(resource, orgs, is_defer_org=is_defer_org, status_filter_by=status_filter_by
     )
 
     for resource in resources_to_retry.values():
-        if not orgs or resource["org-name"] in orgs:
-            print(f"Resource {resource['resource-url']} from org {resource['org-name']} will be retried.")
+        if not orgs or (
+            resource["org-name"] not in orgs
+            if is_defer_org
+            else resource["org-name"] in orgs
+        ):
+            print(
+                f"Resource {resource['resource-url']} from org {resource['org-name']} will be retried."
+            )
 
     urls_to_retry = list(retry_urls)
     if not limit:
@@ -238,7 +256,7 @@ async def main(input_csv_file_path, output_csv_file_path, limit=None, orgs_path=
         for result in shared_results:
             resource_id = result["resource_id"]
             original_row = resources_to_retry[resource_id]
-            original_row["resource-url"] = result["url"] # updated to the database URL
+            original_row["resource-url"] = result["url"]  # updated to the database URL
             response_category, response_detail = classify_response(
                 result["status"], result["error"]
             )
@@ -269,7 +287,25 @@ def parse_args():
         "output_csv_file_path", type=str, help="Path for CSV file to save results to"
     )
     parser.add_argument(
-        "-o", "--orgs-path", type=str, default=None, help="Orgs to filter by (comma-separated list of org IDs)"
+        "-o",
+        "--orgs-path",
+        type=str,
+        default=None,
+        help="Orgs to filter by (newline-separated list of org IDs)",
+    )
+    parser.add_argument(
+        "-d",
+        "--is-defer-org",
+        type=str,
+        default="True",
+        help="Flag to indicate if orgs should be deferred (filtered out) or filtered by (default: True)",
+    )
+    parser.add_argument(
+        "-s",
+        "--status-filter-by",
+        type=str,
+        default="",
+        help="Status code or category to filter by (default: empty, meaning no filter)",
     )
     parser.add_argument(
         "-l", "--limit", type=int, default=None, help="Maximum number of URLs to check"
@@ -283,7 +319,14 @@ if __name__ == "__main__":
     print("Starting worker pool to process URLs...")
     args = parse_args()
     asyncio.run(
-        main(args.input_csv_file_path, args.output_csv_file_path, limit=args.limit, orgs_path=args.orgs_path)
+        main(
+            args.input_csv_file_path,
+            args.output_csv_file_path,
+            limit=args.limit,
+            orgs_path=args.orgs_path,
+            is_defer_org=args.is_defer_org == "True",
+            status_filter_by=args.status_filter_by,
+        )
     )
     time_taken = time.time() - start
     print(f"All URLs processed successfully in {time_taken}S.")
