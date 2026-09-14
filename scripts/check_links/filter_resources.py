@@ -1,0 +1,117 @@
+import argparse
+import csv
+import time
+import random
+
+from lib import filter_resource
+
+def resources_to_filter(csv_path):
+    with open(csv_path, "r", newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        rows = []
+
+        for row in reader:
+            if row["to-delete"].lower() == "false" and row["category"] != "OK" and row["http-status"] != "200":
+                rows.append(row)
+        return rows
+
+def main(
+    input_csv_file_path,
+    output_csv_file_path,
+    limit=None,
+    deferred_orgs_path=None,
+    is_defer_org=None,
+    status_filter_by=None,
+):
+    deferred_orgs = []
+    if deferred_orgs_path:
+        with open(deferred_orgs_path, "r") as f:
+            deferred_orgs = [line.strip() for line in f]
+        print(f"Filtering out deferred orgs: {deferred_orgs}")
+
+    filtered_resources = [
+        resource
+        for resource in resources_to_filter(input_csv_file_path)
+        if filter_resource(
+            resource,
+            deferred_orgs,
+            statuses=status_filter_by,
+        )
+    ]
+
+    with open(output_csv_file_path, "w", newline="", encoding="utf-8") as f:
+        REPORT_HEADERS = [
+            "datagovuk-url",
+            "package-id",
+            "package-name",
+            "package-metadata-created",
+            "package-metadata-modified",
+            "guid",
+            "resource-id",
+            "resource-url",
+            "resource-created",
+            "resource-last-modified",
+            "resource-metadata-modified",
+            "org-name",
+            "org-id",
+            "http-status",
+            "category",
+            "error-detail",
+            "original-url",
+            "original-http-status",
+            "original-category",
+            "original-error-detail",
+            "to-delete",
+            "checked-at",
+        ]
+        writer = csv.DictWriter(f, fieldnames=REPORT_HEADERS, quoting=csv.QUOTE_ALL)
+        writer.writeheader()
+        writer.writerows(filtered_resources)
+    
+    # STEP 2
+    # before this, review the outputted csv with the team
+    # Filtering by defered orgs
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="A script for retrying requests to broken links for data.gov.uk"
+    )
+    parser.add_argument(
+        "input_csv_file_path",
+        type=str,
+        help="The CSV file of a previous link check/retry run",
+    )
+    parser.add_argument(
+        "output_csv_file_path", type=str, help="Path for CSV file to save results to"
+    )
+    parser.add_argument(
+        "-o",
+        "--deferred-orgs-path",
+        type=str,
+        default=None,
+        help="Deferred orgs to filter out (newline separated list of org IDs)",
+    )
+    parser.add_argument(
+        "-s",
+        "--status-filter-by",
+        type=str,
+        default="",
+        help="Status code or category to filter by (default: empty, meaning no filter)",
+    )
+    args = parser.parse_args()
+    return args
+
+
+if __name__ == "__main__":
+    start = time.time()
+    print("Filtering links...")
+    args = parse_args()
+    main(
+        args.input_csv_file_path,
+        args.output_csv_file_path,
+        deferred_orgs_path=args.deferred_orgs_path,
+        status_filter_by=args.status_filter_by,
+    )
+    time_taken = time.time() - start
+    print(f"All links filtered successfully in {time_taken}S.")
