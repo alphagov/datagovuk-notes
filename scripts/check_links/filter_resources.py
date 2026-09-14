@@ -1,9 +1,9 @@
 import argparse
 import csv
 import time
-import random
 
 from lib import filter_resource
+
 
 def resources_to_filter(csv_path):
     with open(csv_path, "r", newline="", encoding="utf-8") as f:
@@ -18,26 +18,38 @@ def resources_to_filter(csv_path):
 def main(
     input_csv_file_path,
     output_csv_file_path,
-    limit=None,
     deferred_orgs_path=None,
-    is_defer_org=None,
     status_filter_by=None,
 ):
     deferred_orgs = []
     if deferred_orgs_path:
         with open(deferred_orgs_path, "r") as f:
             deferred_orgs = [line.strip() for line in f]
-        print(f"Filtering out deferred orgs: {deferred_orgs}")
+        print(f"Filtering out deferred orgs: {deferred_orgs} \n")
 
-    filtered_resources = [
-        resource
-        for resource in resources_to_filter(input_csv_file_path)
+    print(f"Filtering resources by {status_filter_by} \n")
+    print("Setting filtered resources to-delete = true \n")
+    filtered_resources = []
+    status_counts = {}
+    category_counts = {}
+
+    for resource in resources_to_filter(input_csv_file_path):
         if filter_resource(
             resource,
             deferred_orgs,
             statuses=status_filter_by,
-        )
-    ]
+        ):
+            resource.update({"to-delete": "true"})
+            filtered_resources.append(resource)
+
+            status = resource["http-status"]
+            category = resource["category"]
+            status_counts[status] = status_counts.get(status, 0) + 1
+            category_counts[category] = category_counts.get(category, 0) + 1
+
+    print(f"Filtered resources count by status: {status_counts} \n")
+    print(f"Filtered resources count by category: {category_counts} \n")
+    print(f"Total filtered resources: {len(filtered_resources)} \n")
 
     with open(output_csv_file_path, "w", newline="", encoding="utf-8") as f:
         REPORT_HEADERS = [
@@ -67,10 +79,6 @@ def main(
         writer = csv.DictWriter(f, fieldnames=REPORT_HEADERS, quoting=csv.QUOTE_ALL)
         writer.writeheader()
         writer.writerows(filtered_resources)
-    
-    # STEP 2
-    # before this, review the outputted csv with the team
-    # Filtering by defered orgs
 
 
 def parse_args():
