@@ -73,3 +73,9 @@ https://cddodatamarketplace.atlassian.net/browse/DGUK-993
 curl "https://metadata.naturalresources.wales/geonetwork/gemini/eng/csw?service=CSW&version=2.0.2&request=GetRecordById&outputFormat=application%2Fxml&outputSchema=http%3A%2F%2Fwww.isotc211.org%2F2005%2Fgmd&elementsetname=full&id=NRW_DS100675" | grep "<gmd:characterEncoding />"
     ```
     - the ticket has been updated with information from my investigation and the curl command to help the publisher check their records and submitted as solved
+  - the problem persists with other errors in the XML so try to find a way for the publisher to test it themselves
+    - perhaps through validating it via a schema or running the same code steps as in the spatial extension
+    - csw_client.py copied over from https://raw.githubusercontent.com/ckan/ckanext-spatial/refs/heads/master/ckanext/spatial/lib/csw_client.py
+    - csw requirements have been set to same version as in alphagov/ckanext-spatial, 0.28.1
+    - updated the script with details on how to get the identifiers as the publisher might not have to deal with zscaler - this script will be passed on to the publisher so that they can test their records themselves.
+
