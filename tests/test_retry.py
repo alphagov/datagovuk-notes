@@ -1,45 +1,48 @@
-import resource
-
-from scripts.check_links.lib import is_filter_by
+from scripts.check_links.lib import filter_resource
 
 
-def test_is_filter_none_set():
-    orgs = []
+def test_filter_resource_no_deferred_orgs():
+    deferred_orgs = []
     resource = {"org-name": "Org A"}
-    assert is_filter_by(resource, orgs, is_defer_org=False) == True
+    assert filter_resource(resource, deferred_orgs) == True
 
 
-def test_is_filter_by_org():
-    orgs = ["Org A"]
+def test_filter_resource_filters_out_deferred_org():
+    deferred_orgs = ["Org A"]
     resource = {"org-name": "Org A"}
-    assert is_filter_by(resource, orgs, is_defer_org=True) == False
-    assert is_filter_by(resource, orgs, is_defer_org=False) == True
+    assert filter_resource(resource, deferred_orgs) == False
 
 
-def test_is_filter_by_status():
+def test_filter_resource_by_statuses():
     resource = {"http-status": 404, "category": "TIMEOUT"}
-    assert is_filter_by(resource, "", status_filter_by="404") == True
-    assert is_filter_by(resource, "", status_filter_by="TIMEOUT") == True
+    assert filter_resource(resource, deferred_orgs=[], statuses="404") == True
+    assert filter_resource(resource, deferred_orgs=[], statuses="TIMEOUT") == True
     assert (
-        is_filter_by(resource, "", status_filter_by="404,410,TIMEOUT,CONNECTION_ERROR")
+        filter_resource(resource, deferred_orgs=[], statuses="404,410,TIMEOUT,CONNECTION_ERROR")
         == True
     )
 
 
-def test_is_filter_by_multiple_statuses():
+def test_filter_resource_multiple_statuses():
     resource = {"http-status": 410, "category": "CONNECTION_ERROR"}
     assert (
-        is_filter_by(resource, "", status_filter_by="404,410,TIMEOUT,CONNECTION_ERROR")
+        filter_resource(resource, deferred_orgs=[], statuses="404,410,TIMEOUT,CONNECTION_ERROR")
         == True
     )
-    assert is_filter_by(resource, "", status_filter_by="404,TIMEOUT") == False
+    assert filter_resource(resource, deferred_orgs=[], statuses="404,TIMEOUT") == False
 
 
-def test_is_filter_by_category_filters():
+def test_filter_resource_by_status_category():
     resource = {"http-status": "", "category": "DNS_ERROR"}
     assert (
-        is_filter_by(
-            resource, "", status_filter_by="404,410,TIMEOUT,DNS_ERROR,CONNECTION_ERROR"
+        filter_resource(
+            resource, deferred_orgs=[], statuses="404,410,TIMEOUT,DNS_ERROR,CONNECTION_ERROR"
         )
         == True
     )
+
+def test_filter_resource_deferred_orgs_and_statuses():
+    deferred_orgs = ["Org A"]
+    resource = {"org-name": "Org B", "http-status": 404, "category": "TIMEOUT"}
+
+    assert filter_resource(resource, deferred_orgs=deferred_orgs, statuses="404,TIMEOUT") == True
