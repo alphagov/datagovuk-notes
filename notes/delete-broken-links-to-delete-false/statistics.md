@@ -39,3 +39,34 @@ The output CSV is `step1_filter_resources_result.csv` which contains the filtere
 
   All links filtered successfully in 0.43290281295776367S.
 ```
+
+
+## Step 2
+
+This is similar to step 1 but it filters by invalid domains and does not filter by status.
+
+- Filter by to-delete=false
+- Filter out http-status=200s
+- Filter out deferred orgs
+- Filter by invalid domains
+
+```bash
+ python3 scripts/check_links/filter_resources.py \
+    -o notes/delete-broken-links-to-delete-false/orgs-to-defer.txt \
+    -d notes/delete-broken-links-to-delete-false/domains-to-delete.txt \
+    notes/delete-broken-links-to-delete-false/errors-current.csv \
+    notes/delete-broken-links-to-delete-false/step2_filtered_resources_by_invalid_domains.csv
+```
+
+```bash
+  Filtering links...
+  Filtering out deferred orgs: ['healthcare-quality-improvement-partnership', 'newcastle-city-council', 'rural-payments-agency', 'royal-borough-of-kensington-and-chelsea', 'leicester-city-council', 'healthcare-quality-improvement-partnership', 'marine-environmental-data-information-network', 'nottingham-city-council', 'national-highways', 'bridgend-county-borough-council', 'oxford-city-council', 'wirral-metropolitan-borough-council', 'environment-agency', 'marine-management-organisation', 'natural-england', 'department-for-environment-food-and-rural-affairs', 'animal-and-plant-health-agency'] 
+
+  Filtering by domains: ['geoportal1-ons.opendata.arcgis.com', 'opendata-daerani.hub.arcgis.com', 'inspire.misoportal.com', 'opendata-nstauthority.hub.arcgis.com', 'osni-spatialni.opendata.arcgis.com', 'data.barrowbc.gov.uk', 'itportal.decc.gov.uk', 'uploads.scarborough.gov.uk', 'data.peterborough.gov.uk', 'gmtu.gov.uk', 'data.horsham.gov.uk', 'sfo.gov.uk', 'pendle.gov.uk', 'maps.northlincs.gov.uk', 'rcplondon.ac.uk', 'ccg.nhs.uk'] 
+
+  Setting filtered resources to-delete = true 
+
+  Total filtered resources: 13796 
+
+  All links filtered successfully in 0.42493629455566406S.
+```
