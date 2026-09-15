@@ -15,24 +15,24 @@ python3 scripts/check_links/filter_resources.py \
   -s "404,410,TIMEOUT,CONNECTION_ERROR,SERVER_ERROR,DNS_ERROR" \
   -o notes/delete-broken-links-to-delete-false/orgs-to-defer.txt \
   notes/delete-broken-links-to-delete-false/errors-current.csv \
-  scripts/check_links/step1_result.csv
+  scripts/check_links/step1_filter_resources_result.csv
 ```
 
 ### Printed out statistics
 
 ```bash
-    Filtering links...
-    Filtering out deferred orgs: ['healthcare-quality-improvement-partnership', 'newcastle-city-council', 'rural-payments-agency', 'royal-borough-of-kensington-and-chelsea', 'leicester-city-council', 'healthcare-quality-improvement-partnership', 'marine-environmental-data-information-network', 'nottingham-city-council', 'national-highways', 'bridgend-county-borough-council', 'oxford-city-council', 'wirral-metropolitan-borough-council', 'environment-agency', 'marine-management-organisation', 'natural-england', 'department-for-environment-food-and-rural-affairs', 'animal-and-plant-health-agency'] 
+  Filtering links...
+  Filtering out deferred orgs: ['healthcare-quality-improvement-partnership', 'newcastle-city-council', 'rural-payments-agency', 'royal-borough-of-kensington-and-chelsea', 'leicester-city-council', 'healthcare-quality-improvement-partnership', 'marine-environmental-data-information-network', 'nottingham-city-council', 'national-highways', 'bridgend-county-borough-council', 'oxford-city-council', 'wirral-metropolitan-borough-council', 'environment-agency', 'marine-management-organisation', 'natural-england', 'department-for-environment-food-and-rural-affairs', 'animal-and-plant-health-agency'] 
 
-    Filtering resources by 404,410,TIMEOUT,CONNECTION_ERROR,SERVER_ERROR,DNS_ERROR 
+  Filtering resources by 404,410,TIMEOUT,CONNECTION_ERROR,SERVER_ERROR,DNS_ERROR 
 
-    Setting filtered resources to-delete = true 
+  Setting filtered resources to-delete = true 
 
-    Filtered resources count by status: {'404': 3062, '': 10926, '502': 170, '500': 944, '410': 2, '503': 231, '520': 5, '522': 3} 
+  Filtered resources count by status: {'404': 3062, '410': 2} 
 
-    Filtered resources count by category: {'NOT_FOUND': 3062, 'CONNECTION_ERROR': 2410, 'SERVER_ERROR': 1353, 'GONE': 2, 'TIMEOUT': 7968, 'DNS_ERROR': 548} 
+  Filtered resources count by category: {'CONNECTION_ERROR': 2410, 'SERVER_ERROR': 1353, 'TIMEOUT': 7968, 'DNS_ERROR': 548} 
 
-    Total filtered resources: 15343 
+  Total filtered resources: 15343 
 
-    All links filtered successfully in 0.3762650489807129S.
+  All links filtered successfully in 0.43290281295776367S.
 ```

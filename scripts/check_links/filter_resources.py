@@ -27,6 +27,7 @@ def main(
             deferred_orgs = [line.strip() for line in f]
         print(f"Filtering out deferred orgs: {deferred_orgs} \n")
 
+    filters = [f.strip() for f in status_filter_by.split(",")] if status_filter_by else []
     print(f"Filtering resources by {status_filter_by} \n")
     print("Setting filtered resources to-delete = true \n")
     filtered_resources = []
@@ -44,8 +45,10 @@ def main(
 
             status = resource["http-status"]
             category = resource["category"]
-            status_counts[status] = status_counts.get(status, 0) + 1
-            category_counts[category] = category_counts.get(category, 0) + 1
+            if status in filters:
+                status_counts[status] = status_counts.get(status, 0) + 1
+            if category in filters:
+                category_counts[category] = category_counts.get(category, 0) + 1
 
     print(f"Filtered resources count by status: {status_counts} \n")
     print(f"Filtered resources count by category: {category_counts} \n")
