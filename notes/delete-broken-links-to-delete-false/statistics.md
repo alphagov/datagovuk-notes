@@ -18,6 +18,9 @@ python3 scripts/check_links/filter_resources.py \
   scripts/check_links/step1_filter_resources_result.csv
 ```
 
+The input CSV was `errors-current.csv`
+The output CSV is `step1_filter_resources_result.csv` which contains the filtered resources
+
 ### Printed out statistics
 
 ```bash
