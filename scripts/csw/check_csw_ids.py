@@ -36,8 +36,6 @@ results = []
 exceptions = {}
 for i, id in enumerate(_ids):
     print(f"Processing {i+1}/{len(_ids)}: {id}")
-    if i > 20: 
-        break
     trace_block = ""
     with urlopen(REQUEST_URL.format(id=id), context=context) as req:
         xml = tree.parse(req)
