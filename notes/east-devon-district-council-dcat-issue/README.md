@@ -44,18 +44,18 @@ https://govuk.zendesk.com/agent/tickets/6772403
   - this is a short script below for testing the response decode
 
   ```
-import requests
+  import requests
 
-resp = requests.get("https://files.eastdevon.gov.uk/transparency/metadata/eddctransparencydatasets.json")
+  resp = requests.get("https://files.eastdevon.gov.uk/transparency/metadata/eddctransparencydatasets.json")
 
-try:
-  print('Trying to decode as utf-8')
-  decoded = resp.content.decode('utf-8')
-except Exception as e:
-  print(f'\tException: {e}\n')
-  print('Trying to decide as utf-16')
-  if (resp.content.decode('utf-16')):
-    print('\tSuccess')
+  try:
+    print('Trying to decode as utf-8')
+    decoded = resp.content.decode('utf-8')
+  except Exception as e:
+    print(f'\tException: {e}\n')
+    print('Trying to decide as utf-16')
+    if (resp.content.decode('utf-16')):
+      print('\tSuccess')
   ```
 
   - on the Integration server however it was timing out and not reporting an encoding error
