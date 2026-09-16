@@ -39,6 +39,7 @@ https://cddodatamarketplace.atlassian.net/browse/DGUK-964 part 2
   - 3 links that were previously broken appeared to be working now, but they all appear to point to a draft attachment that sits behind GOV.UK signon page
   - they should probably be still deleted as not available without credentials and still in a draft state.
   - I've asked the question on the NDL team chat to get opinions from technical and product
+  - the answer was that the publisher did update their data so the data was in the correct state to be published
 - next step is to copy over the process script from alphagov/datagovuk-scripts/check-links/process_check_links_report.py and update it so that it can be run as a single file and removed the s3 upload as we will be downloading the report, then test this against the retry script locally against the test data before testing it out on Integration on a dry run
 - command to run the process script -
 
