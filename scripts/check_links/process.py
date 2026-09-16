@@ -97,47 +97,6 @@ class Repository:
             self._conn.close()
             self._conn = None
 
-    def fetch_resources(self, limit: int | None = None) -> list[ResourceRow]:
-        # TODO: positional unpacking of cursor is getting a bit shonky. circle back later
-        # possibly switch to NamedTupleCursor or DictCursor? might need some more aliases
-        # to avoid name clashes
-        assert self._conn is not None, "Repository not entered"
-        with self._conn, self._conn.cursor() as cur:
-            if limit is not None:
-                cur.execute(self.SELECT_SQL + " LIMIT %s", (limit,))
-            else:
-                cur.execute(self.SELECT_SQL)
-            return [
-                ResourceRow(
-                    package_id=package_id,
-                    package_name=package_name,
-                    resource_id=resource_id,
-                    url=url.strip(),
-                    org_name=org_name,
-                    org_id=org_id,
-                    resource_created=resource_created,
-                    resource_last_modified=resource_last_modified,
-                    resource_metadata_modified=resource_metadata_modified,
-                    package_metadata_created=package_metadata_created,
-                    package_metadata_modified=package_metadata_modified,
-                    guid=guid,
-                )
-                for (
-                    package_id,
-                    package_name,
-                    resource_id,
-                    url,
-                    org_name,
-                    org_id,
-                    resource_created,
-                    resource_last_modified,
-                    resource_metadata_modified,
-                    package_metadata_created,
-                    package_metadata_modified,
-                    guid,
-                ) in cur
-            ]
-
     def mark_resource_deleted(self, resource_id: str, resource_url: str, package_id: str) -> int:
         assert self._conn is not None, "Repository not entered"
         with self._conn, self._conn.cursor() as cur:
