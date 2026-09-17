@@ -40,3 +40,15 @@ We ran a dry-run deletion process for `notes/delete-broken-links-to-delete-false
 587 resources were skipped. We did a sample check of 4 and found that the state was already set to deleted for them.
 
 The immediate plan is to update the process.py deletion script to output a csv of all the resources that were not able to be deleted. This means we can later investigate way and unblock the deletion process for 14756 resources.
+
+---
+
+After outputting the csv `notes/delete-broken-links-to-delete-false/issues/step1_filter_resources_result_not_deleted_20260917T081924.csv` and running an SQL statement to check how many had a state of "deleted"
+
+329 of 587 resources have state as deleted
+
+The other 258 of 587 resources don't exist in the table. They may have been hard deleted already.
+
+---
+
+We plan on going ahead with deleting 14756 in integration
