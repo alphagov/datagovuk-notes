@@ -51,4 +51,38 @@ The other 258 of 587 resources don't exist in the table. They may have been hard
 
 ---
 
+16 September 2026
+
 We plan on going ahead with deleting 14756 in integration
+
+---
+
+17 September 2026
+
+We ran the deletion script with input `notes/delete-broken-links-to-delete-false/step1_filter_resources_result.csv` (`https://github.com/alphagov/govuk-dgu-charts/pull/1275/changes`)
+
+and flags `-set-state deleted` `--mode live`
+
+The output CSV was `/script/data_deleted_20260917T134748.file`
+
+The deletion script results were:
+
+```bash
+2026-09-17 13:48:23,839 - INFO - deleted 14752 resources, 3779 packages to reindex
+```
+
+A total of *14752 out of 15343* resources were deleted
+
+The reindex was successful with:
+
+```bash
+2026-09-17 14:52:11,462 - INFO - CKAN reindex 3779/3779 - fff67f58-d6ca-407d-a3ca-7bfc00f32ec8 succeeded
+```
+
+The 591 resources that weren't deleted were outputted as a CSV here
+
+notes/delete-broken-links-to-delete-false/issues/step1_failed_to_delete_resources_output.csv
+
+*TODO:*
+
+- [ ] Analyse these 591 resources: some may have resources with state deleted or lacking package ids etc.
