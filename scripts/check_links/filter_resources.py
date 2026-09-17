@@ -2,7 +2,7 @@ import argparse
 import csv
 import time
 
-from lib import filter_resource
+from .lib import filter_resource
 
 
 def resources_to_filter(csv_path):

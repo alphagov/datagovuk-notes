@@ -3,7 +3,9 @@ def filter_resource(resource, deferred_orgs, statuses=None):
         return False
 
     if statuses:
-        if resource["http-status"] and str(resource["http-status"]) in statuses or resource["category"] in statuses:
+        has_status = resource["http-status"] and str(resource["http-status"]) in statuses
+        has_category = resource["category"] and resource["category"] in statuses
+        if has_status or has_category:
             return True
         else:
             return False
