@@ -1,5 +1,24 @@
 https://cddodatamarketplace.atlassian.net/issues?jql=textfields%20~%20%22medin*%22&wildcardFlag=true&selectedIssue=DGUK-926
 
+## Summary
+
+### Issue
+
+It was identified after removing duplicate datasets for MEDIN that not all the datasets from their WAF harvest source were being harvested. 
+Around 60 datasets were unaccounted for, so a separate ticket to investigate this was created.
+
+### Resolution
+
+After restarting the investigation into the missing datasets it was discovered that actually the GUIDs were already in the system but published by CEFAS (Centre for Environment, Fisheries & Aquaculture Science). There is a single guid that is not in the system but it might be due to it being recently added. 
+
+The publisher has been made aware of the situation and the ticket closed as all guids have been accounted for except for 1 but there is some potential that they might come back to request that the datasets for CEFAS are deleted so that they will be harvested by the MEDIN harvester instead.
+
+### Main takeaways
+
+* if guids are already in the system it is likely that they will not be harvested again by another harvest source, so if a dataset is missing from a harvest source it is a good idea to run a search without a harvest source constraint on the harvest_object table for the guid.
+
+* the `check_waf_ids.py` script can be adapted and used to create a list to investigate other WAF harvest sources.
+
 ## Notes
 
 - The script to create the list of datasets that are not published is - 
