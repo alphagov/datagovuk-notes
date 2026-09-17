@@ -45,3 +45,4 @@ AND guid in ('01456949c2f8576182af30d432d86b9c','03d046b98ee0557a980578eb38da4b3
     - ran a query on production to find it returns an empty result set, perhaps it was added after the last harvest run which was on 10th September
   - the zendesk ticket for MEDIN has been responded with the `medin_guids.csv` file attached so that the publisher can review and understand why some datasets are not showing under their publisher filter
     - also identified that there is a discrepancy between what is shown on CKAN and data.gov.uk for MEDIN initially because there are over 1000 datasets which do not have resources as part of the dataset, these are being omitted from the search results by default
+    - the zendesk ticket has been closed as solved but there might be an ask to delete the CEFAS datasets to allow the MEDIN datasets to be harvested instead
