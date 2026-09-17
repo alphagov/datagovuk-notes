@@ -187,13 +187,17 @@ def apply(
     input_path: str,
     reindex_path: str,
     output_report_path: str,
+    not_deleted_report_path: str,
     mode: str,
     set_state: str,
 ) -> None:
     to_reindex: set[str] = set()
     updated = 0
+    skipped = 0
     outfile = None
     writer: csv.DictWriter | None = None
+    not_deleted_outfile = None
+    not_deleted_writer: csv.DictWriter | None = None
 
     with contextlib.ExitStack() as stack:
         infile = stack.enter_context(open(input_path, newline="", encoding="utf-8"))
@@ -227,15 +231,26 @@ def apply(
                     writer.writerow(row_copy)
                     outfile.flush()
                 else:
+                    skipped += 1
                     logger.info(
                         f"skipped {resource_id} (attempted to set state to {set_state} and looked up with URL {resource_url})"
                     )
+                    if not_deleted_writer is None:
+                        not_deleted_outfile = stack.enter_context(
+                            open(not_deleted_report_path, "w", newline="", encoding="utf-8")
+                        )
+                        not_deleted_writer = csv.DictWriter(not_deleted_outfile, fieldnames=list(row))
+                        not_deleted_writer.writeheader()
+                    not_deleted_writer.writerow(row)
+                    not_deleted_outfile.flush()
             else:
                 updated += 1
                 logger.info(f"would set state == {set_state} on resource {resource_id}")
 
     if writer is not None:
         logger.info(f"report of resources set to {set_state}: {output_report_path}")
+    if not_deleted_writer is not None:
+        logger.info(f"report of resources not {set_state}: {not_deleted_report_path} ({skipped} skipped)")
 
     with open(reindex_path, "w", encoding="utf-8") as f:
         for package_id in sorted(to_reindex):
@@ -261,7 +276,9 @@ def main(argv: list[str] | None = None) -> int:
     logger.info(f"reindex path: {reindex_path}")
 
     output_report_path = _create_output_filename(args.input, args.set_state, timestamp)
+    not_deleted_report_path = _create_output_filename(args.input, f"not_{args.set_state}", timestamp)
     logger.info(f"{args.set_state} report path: {output_report_path}")
+    logger.info(f"not {args.set_state} report path: {not_deleted_report_path}")
 
     dsn = os.environ.get("CKAN_SQLALCHEMY_URL")
     if not dsn:
@@ -275,6 +292,7 @@ def main(argv: list[str] | None = None) -> int:
             input_path=args.input,
             reindex_path=reindex_path,
             output_report_path=output_report_path,
+            not_deleted_report_path=not_deleted_report_path,
             mode=args.mode,
             set_state=args.set_state,
         )
