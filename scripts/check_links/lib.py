@@ -13,4 +13,7 @@ def filter_resource(resource, deferred_orgs, statuses=None, domains=None):
         else:
             return False
 
+    if not statuses and not domains:
+        return True
+
     return False

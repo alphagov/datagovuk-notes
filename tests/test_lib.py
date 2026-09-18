@@ -46,3 +46,10 @@ def test_filter_resource_deferred_orgs_and_statuses():
     resource = {"org-name": "Org B", "http-status": 404, "category": "TIMEOUT"}
 
     assert filter_resource(resource, deferred_orgs=deferred_orgs, statuses="404,TIMEOUT") == True
+
+
+def test_filter_resource_domains_without_statuses():
+    resource = {"org-name": "Org A", "resource-url": "https://example.com/test", "http-status": 200, "category": ""}
+
+    assert filter_resource(resource, deferred_orgs=[], domains=["example.com"]) == True
+    assert filter_resource(resource, deferred_orgs=[], domains=["other.com"]) == False
