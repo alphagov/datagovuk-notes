@@ -1,3 +1,17 @@
+## Summary
+
+### Step 1 summary (delete resources by http-status)
+
+17 September 2026
+
+> For integration, a total of *14,752 out of 15,343* resources were deleted
+
+18 September 2026
+
+> For staging, a total of *14,756 out of 15,343* resources were deleted
+
+> For production, a total of *14,743 out of 15,343* resources were deleted
+
 # Notes
 
 - Joes notes on broken links to-delete=false
