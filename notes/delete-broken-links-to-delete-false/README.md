@@ -35,6 +35,10 @@ then 2 passes:
 
 ---
 
+`retry.py` was renamed and updated to now be `filter_resources.py` , which no longer does a check on the URL as we have recently used playwright to retry those links.
+
+---
+
 We ran a dry-run deletion process for `notes/delete-broken-links-to-delete-false/step1_filter_resources_result.csv` and it was *going to* delete 14756 out of 15343 total resources in integration.
 
 587 resources were skipped. We did a sample check of 4 and found that the state was already set to deleted for them.
@@ -57,13 +61,15 @@ We plan on going ahead with deleting 14756 in integration
 
 ---
 
+## Deployment to integration
+
 17 September 2026
 
-We ran the deletion script with input `notes/delete-broken-links-to-delete-false/step1_filter_resources_result.csv` (`https://github.com/alphagov/govuk-dgu-charts/pull/1275/changes`)
+> A total of *14,752 out of 15,343.* resources were deleted in Integration
 
-and flags `-set-state deleted` `--mode live`
+### Running the deletion script
 
-The output CSV was `/script/data_deleted_20260917T134748.file`
+We ran the [deletion script via govuk-dgu-charts](https://github.com/alphagov/govuk-dgu-charts/pull/1275/changes) and provided the input `notes/delete-broken-links-to-delete-false/step1_filter_resources_result.csv` ([govuk-dgu-charts PR](https://github.com/alphagov/govuk-dgu-charts/pull/1275/changes)). This included the flags `-set-state deleted` `--mode live`
 
 The deletion script results were:
 
@@ -71,7 +77,9 @@ The deletion script results were:
 2026-09-17 13:48:23,839 - INFO - deleted 14752 resources, 3779 packages to reindex
 ```
 
-### A total of *14,752 out of 15,343.* resources were deleted in Integration
+The output CSV was `notes/delete-broken-links-to-delete-false/integration/success/step1_successfully_deleted_resources_20260917T134748.csv`
+
+The 591 resources that weren't deleted were outputted as a CSV here `notes/delete-broken-links-to-delete-false/integration/issues/step1_failed_to_delete_resources_output.csv`
 
 ---
 
@@ -88,12 +96,8 @@ The reindex was successful with:
 2026-09-17 14:52:11,462 - INFO - CKAN reindex 3779/3779 - fff67f58-d6ca-407d-a3ca-7bfc00f32ec8 succeeded
 ```
 
----
-
-The 591 resources that weren't deleted were outputted as a CSV here
-
-`notes/delete-broken-links-to-delete-false/issues/step1_failed_to_delete_resources_output.csv`
+### Tech debt / Follow up work
 
 *TODO:*
 
-- [ ] Analyse these 591 resources: some may have resources with state deleted or lacking package ids etc.
+- [ ] Investigate why these 591 resources were not deleted. For instance, some may have resources with state deleted or lacking package ids or different guids
