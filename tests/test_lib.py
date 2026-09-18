@@ -1,16 +1,15 @@
 from scripts.check_links.lib import filter_resource
 
 
-def test_filter_resource_no_deferred_orgs():
-    deferred_orgs = []
+def test_filter_resource_no_filters():
     resource = {"org-name": "Org A"}
-    assert filter_resource(resource, deferred_orgs) == True
+    assert filter_resource(resource, deferred_orgs=[]) == False
 
 
 def test_filter_resource_filters_out_deferred_org():
     deferred_orgs = ["Org A"]
     resource = {"org-name": "Org A"}
-    assert filter_resource(resource, deferred_orgs) == False
+    assert filter_resource(resource, deferred_orgs=deferred_orgs) == False
 
 
 def test_filter_resource_by_statuses():
