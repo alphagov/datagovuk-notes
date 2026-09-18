@@ -21,7 +21,7 @@ python3 scripts/check_links/filter_resources.py \
 The input CSV was `errors-current.csv`
 The output CSV is `step1_filter_resources_result.csv` which contains the filtered resources
 
-### Printed out statistics
+### Printed out statistics for Integration
 
 ```bash
   Filtering links...
