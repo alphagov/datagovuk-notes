@@ -50,7 +50,8 @@ for i, id in enumerate(_ids):
                 exceptions[trace_block] += 1
         results.append((id, trace_block))
 
-print(f"GUIDs that have failed: {','.join(id[0] for id in results)}")
+failed_guids = [r[0] for r in results if r[1]]
+print(f"GUIDs that have failed: {','.join(failed_guids)}")
 
 for key, count in exceptions.items():    
     print(f"\n======== Exception\n{key}\n======== count: {count}\n")
