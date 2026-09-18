@@ -1,4 +1,4 @@
-## Notes
+# Notes
 
 - Joes notes on broken links to-delete=false
 
@@ -37,21 +37,22 @@ then 2 passes:
 
 `retry.py` was renamed and updated to now be `filter_resources.py` , which no longer does a check on the URL as we have recently used playwright to retry those links.
 
----
+## Step 1 Deleting resoruces by status
 
-We ran a dry-run deletion process for `notes/delete-broken-links-to-delete-false/step1_filter_resources_result.csv` and it was *going to* delete 14756 out of 15343 total resources in integration.
+This `notes/delete-broken-links-to-delete-false/step1_filter_resources_result.csv` is the output after running `filter_resources.py` with these filters:
+
+- Filter by to-delete=false
+- Filter out http-status=200s
+- Filter out deferred orgs
+- Filter by http-status / http-category of: 404,410,TIMEOUT,CONNECTION_ERROR,SERVER_ERROR,DNS_ERROR
+
+### Dry-run in Integration
+
+We ran a dry-run deletion process for `notes/delete-broken-links-to-delete-false/step1_filter_resources_result.csv` and it was *going to* delete `14756 out of 15343 total resources` in Integration.
 
 587 resources were skipped. We did a sample check of 4 and found that the state was already set to deleted for them.
 
 The immediate plan is to update the process.py deletion script to output a csv of all the resources that were not able to be deleted. This means we can later investigate way and unblock the deletion process for 14756 resources.
-
----
-
-After outputting the csv `notes/delete-broken-links-to-delete-false/issues/step1_filter_resources_result_not_deleted_20260917T081924.csv` and running an SQL statement to check how many had a state of "deleted"
-
-329 of 587 resources have state as deleted
-
-The other 258 of 587 resources don't exist in the table. They may have been hard deleted already.
 
 ---
 
@@ -61,13 +62,13 @@ We plan on going ahead with deleting 14756 in integration
 
 ---
 
-## Deployment to integration
+### Deployment to integration
 
 17 September 2026
 
-> A total of *14,752 out of 15,343.* resources were deleted in Integration
+> A total of *14,752 out of 15,343* resources were deleted in Integration
 
-### Running the deletion script
+#### Running the deletion script
 
 We ran the [deletion script via govuk-dgu-charts](https://github.com/alphagov/govuk-dgu-charts/pull/1275/changes) and provided the input `notes/delete-broken-links-to-delete-false/step1_filter_resources_result.csv` ([govuk-dgu-charts PR](https://github.com/alphagov/govuk-dgu-charts/pull/1275/changes)). This included the flags `-set-state deleted` `--mode live`
 
@@ -96,8 +97,62 @@ The reindex was successful with:
 2026-09-17 14:52:11,462 - INFO - CKAN reindex 3779/3779 - fff67f58-d6ca-407d-a3ca-7bfc00f32ec8 succeeded
 ```
 
-### Tech debt / Follow up work
+#### Tech debt / Follow up work
 
 *TODO:*
 
 - [ ] Investigate why these 591 resources were not deleted. For instance, some may have resources with state deleted or lacking package ids or different guids
+
+---
+
+### Deployment to Staging
+
+18 September 2026
+
+> A total of *14,756 out of 15,343* resources were deleted in Staging
+
+We ran the [deletion script via govuk-dgu-charts](https://github.com/alphagov/govuk-dgu-charts/pull/1275/changes) and provided the input `notes/delete-broken-links-to-delete-false/step1_filter_resources_result.csv` ([govuk-dgu-charts PR](https://github.com/alphagov/govuk-dgu-charts/pull/1275/changes)). This included the flags `-set-state deleted` `--mode live`
+
+The deletion script results were:
+
+```bash
+2026-09-18 10:03:33,138 - INFO - deleted 14756 resources, 3779 packages to reindex
+```
+
+The output file of those successfully deleted are here `notes/delete-broken-links-to-delete-false/staging/staging_step1_successfully_deleted_resources_20260918T100234.csv`
+
+```bash
+2026-09-18 10:03:33,137 - INFO - report of resources not deleted: /script/output.file (587 skipped)
+```
+
+#### Tech debt / Follow up work
+
+*TODO:*
+
+- [ ] Investigate why these 587 resources were not deleted. For instance, some may have resources with state deleted or lacking package ids or different guids
+
+### Deployment to Proudction
+
+18 September 2026
+
+> A total of *14,743 out of 15,343* resources were deleted in Production
+
+We ran the [deletion script via govuk-dgu-charts](https://github.com/alphagov/govuk-dgu-charts/pull/1275/changes) and provided the input `notes/delete-broken-links-to-delete-false/step1_filter_resources_result.csv` ([govuk-dgu-charts PR](https://github.com/alphagov/govuk-dgu-charts/pull/1275/changes)). This included the flags `-set-state deleted` `--mode live`
+
+The deletion script results were:
+
+```bash
+2026-09-18 10:09:45,635 - INFO - deleted 14743 resources, 3779 packages to reindex
+```
+
+The output file of those successfully deleted are here `notes/delete-broken-links-to-delete-false/production/production_step1_successfully_deleted_resources_20260918T100234.csv`
+
+```bash
+2026-09-18 10:09:45,634 - INFO - report of resources not deleted: /script/output.file (600 skipped)
+```
+
+#### Tech debt / Follow up work
+
+*TODO:*
+
+- [ ] Investigate why these 600 resources were not deleted. For instance, some may have resources with state deleted or lacking package ids or different guids
