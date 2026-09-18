@@ -71,7 +71,7 @@ The deletion script results were:
 2026-09-17 13:48:23,839 - INFO - deleted 14752 resources, 3779 packages to reindex
 ```
 
-A total of *14752 out of 15343* resources were deleted
+A total of *14,752 out of 15,343.* resources were deleted
 
 The reindex was successful with:
 
@@ -79,9 +79,19 @@ The reindex was successful with:
 2026-09-17 14:52:11,462 - INFO - CKAN reindex 3779/3779 - fff67f58-d6ca-407d-a3ca-7bfc00f32ec8 succeeded
 ```
 
+---
+
 The 591 resources that weren't deleted were outputted as a CSV here
 
-notes/delete-broken-links-to-delete-false/issues/step1_failed_to_delete_resources_output.csv
+`notes/delete-broken-links-to-delete-false/issues/step1_failed_to_delete_resources_output.csv`
+
+For example, there were 4 duplicates on resource-id, they each have a different guid which we don't take into consideration in the deletion process so it gets skipped and added into the 591 `step1_failed_to_delete_resources_output.csv`:
+
+  - 1f0a15ff-6a63-441e-b385-60afb16faf91
+  - 3b1a56a5-a568-4466-82ab-310ec3281ab3
+  - 88356c3d-562f-467c-a0c1-5b05e571c6e3
+  - 490fe701-0e7b-4030-a4b0-9ede8c0d85cf
+
 
 *TODO:*
 
