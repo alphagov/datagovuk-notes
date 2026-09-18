@@ -1,16 +1,15 @@
 from scripts.check_links.lib import filter_resource
 
 
-def test_filter_resource_no_deferred_orgs():
-    deferred_orgs = []
+def test_filter_resource_no_filters():
     resource = {"org-name": "Org A"}
-    assert filter_resource(resource, deferred_orgs) == True
+    assert filter_resource(resource, deferred_orgs=[]) == False
 
 
 def test_filter_resource_filters_out_deferred_org():
     deferred_orgs = ["Org A"]
     resource = {"org-name": "Org A"}
-    assert filter_resource(resource, deferred_orgs) == False
+    assert filter_resource(resource, deferred_orgs=deferred_orgs) == False
 
 
 def test_filter_resource_by_statuses():
@@ -46,3 +45,10 @@ def test_filter_resource_deferred_orgs_and_statuses():
     resource = {"org-name": "Org B", "http-status": 404, "category": "TIMEOUT"}
 
     assert filter_resource(resource, deferred_orgs=deferred_orgs, statuses="404,TIMEOUT") == True
+
+
+def test_filter_resource_domains_without_statuses():
+    resource = {"org-name": "Org A", "resource-url": "https://example.com/test", "http-status": 200, "category": ""}
+
+    assert filter_resource(resource, deferred_orgs=[], domains=["example.com"]) == True
+    assert filter_resource(resource, deferred_orgs=[], domains=["other.com"]) == False

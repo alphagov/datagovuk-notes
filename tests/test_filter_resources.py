@@ -68,3 +68,28 @@ def test_filter_resources_excludes_deferred_orgs(tmp_path):
         rows = list(csv.DictReader(csvfile))
 
     assert all(row["org-name"] != "example-publisher-1" for row in rows)
+
+
+def test_filter_resources_by_domain_without_statuses(tmp_path):
+    output_path = tmp_path / "filtered_check_links_report.csv"
+
+    filter_resources(
+        "notes/delete-broken-links-to-delete-false/test_data/check_links_report.csv",
+        output_path,
+        domains_path="notes/delete-broken-links-to-delete-false/test_data/domains.txt",
+    )
+
+    with output_path.open(newline="") as csvfile:
+        rows = list(csv.DictReader(csvfile))
+
+    assert len(rows) == 1
+    assert rows[0]["resource-url"] == (
+        "http://static-mock-harvest-source:11088/"
+        "mock-third-party/example-dataset-1/findings.pdfx"
+    )
+    assert rows[0]["org-name"] == "example-publisher-1"
+    assert rows[0]["http-status"] == ""
+    assert rows[0]["category"] == "DNS_ERROR"
+    assert rows[0]["to-delete"] == "true"
+
+
