@@ -1,6 +1,22 @@
 ## Summary
 
-### Issue
+### Issue - Update on 18/9/26
+
+The publisher responded that they were going to do a global fix which was eventually applied and their datasource was reharvested on 17/9/26. They also reported an issue with the topic not showing on for their datasets when they think that the data has been correctly set up.
+
+### Solution
+
+The datasets are now being processed without error by the `check_csw_ids.py` script and there are published and available on data.gov.uk website. However the topic as reported by the publisher has not been set, this is probably because they do not align wiith the topics that are set up in the system. 
+
+NRW topics - https://metadata.naturalresources.wales/geonetwork/gemini/eng/catalog.search#/home
+DGU topics - https://github.com/alphagov/datagovuk/blob/607904980db48429d47b6797fac275aca6dcc366/datagovuk/
+directory/constants.py#L4-L25
+
+Additionally the DGU topics are set in CKAN as `theme-primary` - https://github.com/alphagov/ckanext-datagovuk/blob/46ae0dd978a203e97d07d3c05ef09946a4d8eb0f/ckanext/datagovuk/plugin.py#L73-L75
+
+This will require extra work to understand how they are set if we want to make more use of them and map them to publisher topics. So for now I have just reported that the topics they use do not align with how our system uses topics so their topics will not show in our system.
+
+### Issue - 15/9/26
 
 The Natural Resources Wales harvest source was not serving complete records that the OWS library was expecting. This was throwing an obscure server error which the publisher was unable to use to fix their harvest source. After identifying the issue I sent a message back to the publisher describing how they can identify it themselves, they have managed to update a record so that it is harvested and are waiting for a fix from a contractor for the other records. 
 
@@ -95,3 +111,11 @@ https://cddodatamarketplace.atlassian.net/browse/DGUK-993
     - updated the script with details on how to get the identifiers as the publisher might not have to deal with zscaler - this script will be passed on to the publisher so that they can test their records themselves.
     - dsecided in the end not to pass it on as the contractor is still working on updating the harvest source and might have fixed all the issues independently
     - the script will still be useful to check that CSW harvest sources are correctly set up as there is not an easy way to surface useful information from the errors as part of the harvesting process.
+
+18/9/26
+
+  - Publisher has reported back that the schema is wrong
+    - copied across the iso19139 schemas from the `ckanext-spatial` repo
+  - Set breakpoints at `python3.14/site-packages/lxml/isoschematron/__init__.py` on 290 to investigate why it is happpening
+    - didn't get very far in this investigation as running the xml against the schema is more work than expected
+  - I corrected and re-ran the `check_csw_ids.py` as it was reporting successful guids as failing and discovered that they had fixed the xml
