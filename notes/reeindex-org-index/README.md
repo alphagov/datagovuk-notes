@@ -1,5 +1,16 @@
 https://cddodatamarketplace.atlassian.net/jira/software/projects/DGUK/boards/727?filter=assignee%20%3D%205be04e16a86b3349680e5d83&groupBy=custom&selectedIssue=DGUK-1023
 
+## Summary
+
+### Issue
+
+ONS identified an incorrect contact email on their datasets, thay had updated their organisation contact information but this wasn't picked up on the dataset.
+
+### Solution
+
+The dataset will default to the contact information found in the organisations index if it isn't set in the dataset itself. 
+So to get the organisation index updated we have to remove the publisher and run an organisation reindex.
+
 ## Notes
 
 - check that the contact info is empty for a dataset in solr which is wrong as then it will default to the organisation index contact information
@@ -34,3 +45,6 @@ curl -g "$CKAN_SOLR_URL/update?commit=true" \
 ```
 ckan datagovuk reindex-organisations
 ```
+
+- finally got something working on the EKS cluster, issue was to do with the shell script not picking up the arg passed to it, in the end the arg has to be set as an env var to pass it in
+  - it is still possible to run the `reindex_org.sh` with an arg or with an env var
