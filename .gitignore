@@ -1,0 +1,9 @@
+# archive files
+*.gz
+
+# compiler binaries
+__pycache__
+*.pyc
+
+# local OS files
+.DS_Store
