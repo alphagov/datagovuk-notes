@@ -12,6 +12,10 @@
 
 > For production, a total of *14,743 out of 15,343* resources were deleted
 
+*TODO:*
+
+- [ ] Investigate why these 591 resources were not deleted. For instance, some may have resources with state deleted or lacking package ids or different guids
+
 # Notes
 
 - Joes notes on broken links to-delete=false
