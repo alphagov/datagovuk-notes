@@ -2,7 +2,7 @@
 
 ### Expected result
 
-The removal of all broken links for deferred orgs after they have been already retried. 45 resources which were failing are now working so have been removed from the deletion process as they have been marked as FALSE under the to-delete column.
+The removal of all broken links for deferred orgs after they have been already retried. 45 resources which were failing are now working so have been removed from the deletion process as they have been marked as FALSE under the to-delete column. In total 335 resources were deleted.
 
 ### Testing coverage
 
