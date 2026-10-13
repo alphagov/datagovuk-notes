@@ -1,0 +1,121 @@
+## Summary
+
+### Issue - Update on 18/9/26
+
+The publisher responded that they were going to do a global fix which was eventually applied and their datasource was reharvested on 17/9/26. They also reported an issue with the topic not showing on for their datasets when they think that the data has been correctly set up.
+
+### Solution
+
+The datasets are now being processed without error by the `check_csw_ids.py` script and there are published and available on data.gov.uk website. However the topic as reported by the publisher has not been set, this is probably because they do not align wiith the topics that are set up in the system. 
+
+NRW topics - https://metadata.naturalresources.wales/geonetwork/gemini/eng/catalog.search#/home
+DGU topics - https://github.com/alphagov/datagovuk/blob/607904980db48429d47b6797fac275aca6dcc366/datagovuk/
+directory/constants.py#L4-L25
+
+Additionally the DGU topics are set in CKAN as `theme-primary` - https://github.com/alphagov/ckanext-datagovuk/blob/46ae0dd978a203e97d07d3c05ef09946a4d8eb0f/ckanext/datagovuk/plugin.py#L73-L75
+
+This will require extra work to understand how they are set if we want to make more use of them and map them to publisher topics. So for now I have just reported that the topics they use do not align with how our system uses topics so their topics will not show in our system.
+
+### Issue - 15/9/26
+
+The Natural Resources Wales harvest source was not serving complete records that the OWS library was expecting. This was throwing an obscure server error which the publisher was unable to use to fix their harvest source. After identifying the issue I sent a message back to the publisher describing how they can identify it themselves, they have managed to update a record so that it is harvested and are waiting for a fix from a contractor for the other records. 
+
+### Solution
+
+I spent a little bit of time on a script that can be run to identify other issues with the record that would not have been surfaced to the publisher dashboard so that if there are other issues they can be quickly identified.
+
+## Notes
+
+https://cddodatamarketplace.atlassian.net/browse/DGUK-993
+
+### Investigation into issue 
+- https://govuk.zendesk.com/agent/tickets/6222383
+- harvest source - https://metadata.naturalresources.wales/geonetwork/gemini/eng/csw
+- Doing an initial investigation to try and understand what is going on
+- https://metadata.naturalresources.wales/geonetwork/gemini/eng/csw?SERVICE=CSW&VERSION=2.0.2&REQUEST=GetRecords&typeNames=csw:Record&elementSetName=full&maxRecords=500&startPosition=1
+  - did not yield any results
+- https://metadata.naturalresources.wales/geonetwork/gemini/eng/csw?service=CSW&version=2.0.2&request=GetRecords&resultType=results&typeNames=gmd:MD_Metadata&elementSetName=full&startPosition=1&maxRecords=10
+  - 255 records returned
+- the run of the harvest on the local docker stack published 20 records, similar to production which has 19, 
+  - so the issue is not about what is existing in the current database but points towards an issue on their server
+
+  - example of working record under data/working_nrw_161272.xml
+  - example of failing record under data/failing_nrw_100675.xml
+
+  - could use the ckan-mock-harvest-source repo to test fetching data from a harvest source just containing those 2 data sources to see why it is failing
+    - to do this we have to capture the call that CKAN is making to the CSW endpoint so that it can be mocked out
+    - the location oof the spatial extension on the docker stack is 
+    `/usr/lib/ckan/venv/lib/python3.11/site-packages/ckanext/spatial`
+
+    - url 
+    
+    https://metadata.naturalresources.wales/geonetwork/gemini/eng/csw
+
+    - we need to find out what parameter requests are being made to the csw endpoint so set debug points on the gemini.py file for the CSW harvesting section
+
+    - request 
+
+    ?service=CSW&version=2.0.2&request=GetRecordById&outputFormat=application%2Fxml&outputSchema=http%3A%2F%2Fwww.isotc211.org%2F2005%2Fgmd&elementsetname=full&id=NRW_DS100178
+
+    - checking this request arg with a curl command -
+
+    ```
+    curl "https://metadata.naturalresources.wales/geonetwork/gemini/eng/csw?service=CSW&version=2.0.2&request=GetRecordById&outputFormat=application%2Fxml&outputSchema=http%3A%2F%2Fwww.isotc211.org%2F2005%2Fgmd&elementsetname=full&id=NRW_DS102203"
+    ```
+
+    - discovered that the code was breaking just after this breakpoint 
+    
+    `b /usr/lib/ckan/venv/lib/python3.11/site-packages/owslib/iso.py:109`
+
+    - error is
+    PT_Locale(i) failing with `AttributeError: 'NoneType' object has no attribute 'attri'`
+
+    - put breakpoint condition for guid NRW_DS161272 - working version, to see why that is passing
+
+    - now trying to locate the call to get all the CSW records, it is in the gemini.py file under the fetch method
+
+    - request url 
+    https://metadata.naturalresources.wales/geonetwork/gemini/eng/csw
+    - request body
+    <csw:GetRecords xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" xmlns:ogc="http://www.opengis.net/ogc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ows="http://www.opengis.net/ows" outputSchema="http://www.isotc211.org/2005/gmd" outputFormat="application/xml" version="2.0.2" service="CSW" resultType="results" maxRecords="10" xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 http://schemas.opengis.net/csw/2.0.2/CSW-discovery.xsd"><csw:Query typeNames="csw:Record"><csw:ElementSetName>brief</csw:ElementSetName><ogc:SortBy><ogc:SortProperty><ogc:PropertyName>dc:identifier</ogc:PropertyName><ogc:SortOrder>ASC</ogc:SortOrder></ogc:SortProperty></ogc:SortBy></csw:Query></csw:GetRecords>
+
+    - this is what is actually in the urlopen command to retrieve all the records -
+
+    ```
+    {'data': '<csw:GetRecords xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" xmlns:ogc="http://www.opengis.net/ogc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ows="http://www.opengis.net/ows" outputSchema="http://www.isotc211.org/2005/gmd" outputFormat="application/xml" version="2.0.2" service="CSW" resultType="results" startPosition="10" maxRecords="10" xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 http://schemas.opengis.net/csw/2.0.2/CSW-discovery.xsd"><csw:Query typeNames="csw:Record"><csw:ElementSetName>brief</csw:ElementSetName><ogc:SortBy><ogc:SortProperty><ogc:PropertyName>dc:identifier</ogc:PropertyName><ogc:SortOrder>ASC</ogc:SortOrder></ogc:SortProperty></ogc:SortBy></csw:Query></csw:GetRecords>', 'json': None, 'headers': {'User-Agent': 'OWSLib (https://geopython.github.io/OWSLib)', 'Content-type': 'text/xml', 'Accept': 'text/xml,application/xml', 'Accept-Language': 'en-US', 'Accept-Encoding': 'gzip,deflate', 'Host': 'metadata.naturalresources.wales'}, 'verify': True, 'cert': None}
+    ```
+
+    - curl command to get the records
+
+    ```
+    curl "https://metadata.naturalresources.wales/geonetwork/gemini/eng/csw" -d '<csw:GetRecords xmlns:csw="http://www.opengis.net/cat/csw/2.0.2" xmlns:ogc="http://www.opengis.net/ogc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ows="http://www.opengis.net/ows" outputSchema="http://www.isotc211.org/2005/gmd" outputFormat="application/xml" version="2.0.2" service="CSW" resultType="results" startPosition="10" maxRecords="300" xsi:schemaLocation="http://www.opengis.net/cat/csw/2.0.2 http://schemas.opengis.net/csw/2.0.2/CSW-discovery.xsd"><csw:Query typeNames="csw:Record"><csw:ElementSetName>brief</csw:ElementSetName><ogc:SortBy><ogc:SortProperty><ogc:PropertyName>dc:identifier</ogc:PropertyName><ogc:SortOrder>ASC</ogc:SortOrder></ogc:SortProperty></ogc:SortBy></csw:Query></csw:GetRecords>' -H 'Content-Type: text/xml' -H 'Accept text/xml' > natural-resources-wales/data/nsw-all.xml
+    ```
+
+    - get the record by id
+      - gmd:characterEncoding/gmd:MD_CharacterSetCode element is expected but missing from the records that are failing
+      - the error thrown however is a missing `attri` property on `None` object which eventually translates to `Error getting the CSW record with GUID XXX` on the CKAN harvest jobs errors list which is not helpful to publishers and could indicate an issue with our harvest process
+    - created a script `get_csw_ids.py` to check how many CSW records are missing
+    - create a curl command to independently check each resource held by NRW to see if this matches what is being made available
+      - the output from the run was able to identify 246 records, of which only 20 have the correct element
+    - to help the publisher check their CSW records I have created a curl command to look specifically for the closed `characterEncoding` element
+
+    ```sh
+    curl "https://metadata.naturalresources.wales/geonetwork/gemini/eng/csw?service=CSW&version=2.0.2&request=GetRecordById&outputFormat=application%2Fxml&outputSchema=http%3A%2F%2Fwww.isotc211.org%2F2005%2Fgmd&elementsetname=full&id=NRW_DS100675" | grep "<gmd:characterEncoding />"
+    ```
+
+    - the ticket has been updated with information from my investigation and the curl command to help the publisher check their records and submitted as solved
+  - the problem persists with other errors in the XML so try to find a way for the publisher to test it themselves
+    - perhaps through validating it via a schema or running the same code steps as in the spatial extension
+    - csw_client.py copied over from https://raw.githubusercontent.com/ckan/ckanext-spatial/refs/heads/master/ckanext/spatial/lib/csw_client.py
+    - csw requirements have been set to same version as in alphagov/ckanext-spatial, 0.28.1
+    - updated the script with details on how to get the identifiers as the publisher might not have to deal with zscaler - this script will be passed on to the publisher so that they can test their records themselves.
+    - dsecided in the end not to pass it on as the contractor is still working on updating the harvest source and might have fixed all the issues independently
+    - the script will still be useful to check that CSW harvest sources are correctly set up as there is not an easy way to surface useful information from the errors as part of the harvesting process.
+
+18/9/26
+
+  - Publisher has reported back that the schema is wrong
+    - copied across the iso19139 schemas from the `ckanext-spatial` repo
+  - Set breakpoints at `python3.14/site-packages/lxml/isoschematron/__init__.py` on 290 to investigate why it is happpening
+    - didn't get very far in this investigation as running the xml against the schema is more work than expected
+  - I corrected and re-ran the `check_csw_ids.py` as it was reporting successful guids as failing and discovered that they had fixed the xml
