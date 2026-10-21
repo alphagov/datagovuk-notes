@@ -1,9 +1,9 @@
 # archive files
 *.gz
 
-# compiler binaries
-__pycache__
-*.pyc
-
 # local OS files
+# Byte-compiled / optimized / DLL files
+__pycache__/
+.pytest_cache
+*.pyc
 .DS_Store
