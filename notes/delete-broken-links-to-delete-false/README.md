@@ -198,11 +198,17 @@ This `notes/delete-broken-links-to-delete-false/step2_filtered_resources_by_inva
 - Filter out deferred orgs (`notes/delete-broken-links-to-delete-false/orgs-to-defer.txt`)
 - Filter by invalid domains (`notes/delete-broken-links-to-delete-false/domains-to-delete.txt`)
 
-### Deployment to integration
+### Deployment results
 
 18 September 2026
 
 > A total of *5888 out of 13796* resources were deleted in Integration
+
+> For staging, *5888 resources were deleted* and *7908 were skipped*
+
+> For production, *5888 resources were deleted* and *7908 were skipped*
+
+Both staging and production had matching results.
 
 #### Running the deletion script
 
