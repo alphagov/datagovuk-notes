@@ -16,6 +16,20 @@
 
 - [ ] Investigate why these 600 resources were not deleted. For instance, some may have resources with state deleted or lacking package ids or different guids
 
+### Step 2 summary (delete resources by domain)
+
+18 September 2026
+
+> For integration *5888 out of 13796 resources were deleted* and *7908 were skipped*
+
+> For staging, *5888 resources were deleted* and *7908 were skipped*
+
+> For production, *5888 resources were deleted* and *7908 were skipped*
+
+*TODO:*
+
+- [ ] Investigate why these 7908 resources were not deleted. Assumption is that they were deleted as part of Step 1 - delete resource by http status
+
 # Notes
 
 - Joes notes on broken links to-delete=false
@@ -55,7 +69,7 @@ then 2 passes:
 
 `retry.py` was renamed and updated to now be `filter_resources.py` , which no longer does a check on the URL as we have recently used playwright to retry those links.
 
-## Step 1 Deleting resoruces by status
+## Step 1 Deleting resources by status
 
 This `notes/delete-broken-links-to-delete-false/step1_filter_resources_result.csv` is the output after running `filter_resources.py` with these filters:
 
@@ -70,7 +84,7 @@ We ran a dry-run deletion process for `notes/delete-broken-links-to-delete-false
 
 587 resources were skipped. We did a sample check of 4 and found that the state was already set to deleted for them.
 
-The immediate plan is to update the process.py deletion script to output a csv of all the resources that were not able to be deleted. This means we can later investigate way and unblock the deletion process for 14756 resources.
+The immediate plan is to update the process.py deletion script to output a csv of all the resources that were not able to be deleted. This means we can later investigate why and unblock the deletion process for 14756 resources.
 
 ---
 
@@ -88,7 +102,7 @@ We plan on going ahead with deleting 14756 in integration
 
 #### Running the deletion script
 
-We ran the [deletion script via govuk-dgu-charts](https://github.com/alphagov/govuk-dgu-charts/pull/1275/changes) and provided the input `notes/delete-broken-links-to-delete-false/step1_filter_resources_result.csv` ([govuk-dgu-charts PR](https://github.com/alphagov/govuk-dgu-charts/pull/1275/changes)). This included the flags `-set-state deleted` `--mode live`
+We ran the [deletion script via govuk-dgu-charts](https://github.com/alphagov/govuk-dgu-charts/pull/1275/changes) and provided the input `notes/delete-broken-links-to-delete-false/step1_filter_resources_result.csv` ([govuk-dgu-charts PR](https://github.com/alphagov/govuk-dgu-charts/pull/1275/changes)). This included the flags `--set-state deleted` `--mode live`
 
 The deletion script results were:
 
@@ -129,7 +143,7 @@ The reindex was successful with:
 
 > A total of *14,756 out of 15,343* resources were deleted in Staging
 
-We ran the [deletion script via govuk-dgu-charts](https://github.com/alphagov/govuk-dgu-charts/pull/1275/changes) and provided the input `notes/delete-broken-links-to-delete-false/step1_filter_resources_result.csv` ([govuk-dgu-charts PR](https://github.com/alphagov/govuk-dgu-charts/pull/1275/changes)). This included the flags `-set-state deleted` `--mode live`
+We ran the [deletion script via govuk-dgu-charts](https://github.com/alphagov/govuk-dgu-charts/pull/1275/changes) and provided the input `notes/delete-broken-links-to-delete-false/step1_filter_resources_result.csv` ([govuk-dgu-charts PR](https://github.com/alphagov/govuk-dgu-charts/pull/1275/changes)). This included the flags `--set-state deleted` `--mode live`
 
 The deletion script results were:
 
@@ -149,13 +163,13 @@ The output file of those successfully deleted are here `notes/delete-broken-link
 
 - [ ] Investigate why these 587 resources were not deleted. For instance, some may have resources with state deleted or lacking package ids or different guids
 
-### Deployment to Proudction
+### Deployment to Production
 
 18 September 2026
 
 > A total of *14,743 out of 15,343* resources were deleted in Production
 
-We ran the [deletion script via govuk-dgu-charts](https://github.com/alphagov/govuk-dgu-charts/pull/1275/changes) and provided the input `notes/delete-broken-links-to-delete-false/step1_filter_resources_result.csv` ([govuk-dgu-charts PR](https://github.com/alphagov/govuk-dgu-charts/pull/1275/changes)). This included the flags `-set-state deleted` `--mode live`
+We ran the [deletion script via govuk-dgu-charts](https://github.com/alphagov/govuk-dgu-charts/pull/1275/changes) and provided the input `notes/delete-broken-links-to-delete-false/step1_filter_resources_result.csv` ([govuk-dgu-charts PR](https://github.com/alphagov/govuk-dgu-charts/pull/1275/changes)). This included the flags `--set-state deleted` `--mode live`
 
 The deletion script results were:
 
@@ -167,4 +181,47 @@ The output file of those successfully deleted are here `notes/delete-broken-link
 
 ```bash
 2026-09-18 10:09:45,634 - INFO - report of resources not deleted: /script/output.file (600 skipped)
+```
+
+#### Tech debt / Follow up work
+
+*TODO:*
+
+- [ ] Investigate why these 600 resources were not deleted. For instance, some may have resources with state deleted or lacking package ids or different guids
+
+## Step 2 Deleting resources by domain
+
+This `notes/delete-broken-links-to-delete-false/step2_filtered_resources_by_invalid_domains.csv` is the output after running `filter_resources.py` with these filters:
+
+- Filter by to-delete=false
+- Filter out http-status=200s
+- Filter out deferred orgs (`notes/delete-broken-links-to-delete-false/orgs-to-defer.txt`)
+- Filter by invalid domains (`notes/delete-broken-links-to-delete-false/domains-to-delete.txt`)
+
+### Deployment results
+
+18 September 2026
+
+> A total of *5888 out of 13796* resources were deleted in Integration
+
+> For staging, *5888 resources were deleted* and *7908 were skipped*
+
+> For production, *5888 resources were deleted* and *7908 were skipped*
+
+Both staging and production had matching results.
+
+#### Running the deletion script
+
+We ran the [deletion script via govuk-dgu-charts](https://github.com/alphagov/govuk-dgu-charts/pull/1285) and provided the input `notes/delete-broken-links-to-delete-false/step2_filtered_resources_by_invalid_domains.csv` ([govuk-dgu-charts PR](https://github.com/alphagov/govuk-dgu-charts/pull/1285/changes)). This included the flags `--set-state deleted` `--mode live`
+
+The deletion script results were:
+
+```bash
+2026-09-18 13:49:51,534 - INFO - deleted 5888 resources, 3754 packages to reindex
+```
+
+The output file of those successfully deleted are here `notes/delete-broken-links-to-delete-false/step_2/integration/success/integration_step2_deleted_20260918T132630.csv`
+
+```bash
+2026-09-18 13:49:51,533 - INFO - report of resources not deleted: /script/output.file (7908 skipped)
 ```
