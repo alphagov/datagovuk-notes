@@ -1,0 +1,16 @@
+geoportal1-ons.opendata.arcgis.com
+opendata-daerani.hub.arcgis.com
+inspire.misoportal.com
+opendata-nstauthority.hub.arcgis.com
+osni-spatialni.opendata.arcgis.com
+data.barrowbc.gov.uk
+itportal.decc.gov.uk
+uploads.scarborough.gov.uk
+data.peterborough.gov.uk
+gmtu.gov.uk
+data.horsham.gov.uk
+sfo.gov.uk
+pendle.gov.uk
+maps.northlincs.gov.uk
+rcplondon.ac.uk
+ccg.nhs.uk

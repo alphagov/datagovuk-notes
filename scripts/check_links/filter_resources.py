@@ -20,6 +20,7 @@ def main(
     output_csv_file_path,
     deferred_orgs_path=None,
     status_filter_by=None,
+    domains_path=None,
 ):
     deferred_orgs = []
     if deferred_orgs_path:
@@ -27,9 +28,18 @@ def main(
             deferred_orgs = [line.strip() for line in f]
         print(f"Filtering out deferred orgs: {deferred_orgs} \n")
 
+    domains = []
+    if domains_path:
+        with open(domains_path, "r") as f:
+            domains = [line.strip() for line in f if line.strip()]
+        print(f"Filtering by domains: {domains} \n")
+
     filters = [f.strip() for f in status_filter_by.split(",")] if status_filter_by else []
-    print(f"Filtering resources by {status_filter_by} \n")
+    if filters:
+        print(f"Filtering resources by {status_filter_by} \n")
+
     print("Setting filtered resources to-delete = true \n")
+
     filtered_resources = []
     status_counts = {}
     category_counts = {}
@@ -39,6 +49,7 @@ def main(
             resource,
             deferred_orgs,
             statuses=status_filter_by,
+            domains=domains,
         ):
             resource.update({"to-delete": "true"})
             filtered_resources.append(resource)
@@ -50,8 +61,9 @@ def main(
             if category in filters:
                 category_counts[category] = category_counts.get(category, 0) + 1
 
-    print(f"Filtered resources count by status: {status_counts} \n")
-    print(f"Filtered resources count by category: {category_counts} \n")
+    if filters:
+        print(f"Filtered resources count by status: {status_counts} \n")
+        print(f"Filtered resources count by category: {category_counts} \n")
     print(f"Total filtered resources: {len(filtered_resources)} \n")
 
     with open(output_csv_file_path, "w", newline="", encoding="utf-8") as f:
@@ -104,6 +116,13 @@ def parse_args():
         help="Deferred orgs to filter out (newline separated list of org IDs)",
     )
     parser.add_argument(
+        "-d",
+        "--domains-path",
+        type=str,
+        default=None,
+        help="Path to a text file of domains to filter by (newline separated)",
+    )
+    parser.add_argument(
         "-s",
         "--status-filter-by",
         type=str,
@@ -123,6 +142,7 @@ if __name__ == "__main__":
         args.output_csv_file_path,
         deferred_orgs_path=args.deferred_orgs_path,
         status_filter_by=args.status_filter_by,
+        domains_path=args.domains_path,
     )
     time_taken = time.time() - start
     print(f"All links filtered successfully in {time_taken}S.")
