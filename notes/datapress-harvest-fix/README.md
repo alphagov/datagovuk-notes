@@ -11,8 +11,11 @@ Ticket: [DGUK-1020](https://cddodatamarketplace.atlassian.net/browse/DGUK-1020?a
 We updated the harvest source url for:
 
 1. London Datastore - GLA (greater-london-authority)
+    - increased from 1296 datasets to 1304 datasets
 2. Open Barnet (london-borough-of-barnet)
+    - increased from 391 datasets to 397 datasets
 3. Calderdale Dataworks (in progress)
+    - increased from 252 datasets to 277 datasets
 
 We cleared the harvest sources for:
 
@@ -60,6 +63,15 @@ The url for these three harvest sources were updated individually to point to th
 2. Open Barnet (london-borough-of-barnet)
 3. Calderdale Dataworks (in progress)
 
-### Left to do
+### Left to do (Tech debt)
 
-- [ ] Delete the 7 data mill north harvest sources that now have 0 datasets.
+- [ ] Delete the 7 data mill north harvest sources that now have 0 datasets
+    - Datamill North - Durham (durham-county-council)
+    - Data Mill North - Leeds (leeds-city-council)
+    - Data Mill North - Newcastle (newcastle-city-council)
+    - North Tyneside council - DMN (north-tyneside)
+    - Stockport Council - Data Mill North (stockport)
+    - Sunderland council - Data Mill North (sunderland-city-council)
+    - wakefield-dmn (wakefield)
+
+We'd need to discuss whether or not this is worth doing and how to peroperly delete the harvest source so it doesn't get reintroduced.
