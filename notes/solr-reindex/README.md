@@ -33,6 +33,6 @@ A full rebuild was successfully completed on my local docker stack.
         - alsoo set a breakpoint here /usr/lib/ckan/venv/src/ckan/ckan/lib/search/index.py(296) - just before solr connection to see what data was being pushed to solr
         - on the ckanext-datagovuk repo at line 76 on /usr/lib/ckan/venv/src/ckanext-datagovuk/ckanext/datagovuk/action/get.py, I checked whether the offending element was accessible and could be modified on our extension
           - after some testing this was proven to be true, the object_error_summary can be updated to limit the object error summary that was causing the solr reindex outage
-          - PR created to trim down the object_error_summary until it is below the solr field limit
+          - [PR](https://github.com/alphagov/ckanext-datagovuk/pull/2132) created to trim down the object_error_summary until it is below the solr field limit
         - tested on the local docker stack, going to the CEFAS harvest jobs page showed that it only lists the 20 most frequest errors
           - so we could potentially just list the 20 most frequent errors, but there is the potential that some of these errors might be quite large
