@@ -1,5 +1,13 @@
 ## Summary
 
+### Issue - 15/9/26
+
+The Natural Resources Wales harvest source was not serving complete records that the OWS library was expecting. This was throwing an obscure server error which the publisher was unable to use to fix their harvest source. After identifying the issue I sent a message back to the publisher describing how they can identify it themselves, they have managed to update a record so that it is harvested and are waiting for a fix from a contractor for the other records. 
+
+### Solution
+
+I spent a little bit of time on a script that can be run to identify other issues with the record that would not have been surfaced to the publisher dashboard so that if there are other issues they can be quickly identified.
+
 ### Issue - Update on 18/9/26
 
 The publisher responded that they were going to do a global fix which was eventually applied and their datasource was reharvested on 17/9/26. They also reported an issue with the topic not showing on for their datasets when they think that the data has been correctly set up.
@@ -15,14 +23,6 @@ directory/constants.py#L4-L25
 Additionally the DGU topics are set in CKAN as `theme-primary` - https://github.com/alphagov/ckanext-datagovuk/blob/46ae0dd978a203e97d07d3c05ef09946a4d8eb0f/ckanext/datagovuk/plugin.py#L73-L75
 
 This will require extra work to understand how they are set if we want to make more use of them and map them to publisher topics. So for now I have just reported that the topics they use do not align with how our system uses topics so their topics will not show in our system.
-
-### Issue - 15/9/26
-
-The Natural Resources Wales harvest source was not serving complete records that the OWS library was expecting. This was throwing an obscure server error which the publisher was unable to use to fix their harvest source. After identifying the issue I sent a message back to the publisher describing how they can identify it themselves, they have managed to update a record so that it is harvested and are waiting for a fix from a contractor for the other records. 
-
-### Solution
-
-I spent a little bit of time on a script that can be run to identify other issues with the record that would not have been surfaced to the publisher dashboard so that if there are other issues they can be quickly identified.
 
 ## Notes
 
